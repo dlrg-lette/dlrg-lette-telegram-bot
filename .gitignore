@@ -29,3 +29,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Spring Boot Profile-Settings ###
+!/application-*.properties
