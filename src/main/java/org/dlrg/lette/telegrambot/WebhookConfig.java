@@ -2,6 +2,8 @@ package org.dlrg.lette.telegrambot;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.UUID;
+
 @ConfigurationProperties("webhook")
 public class WebhookConfig {
 
@@ -16,6 +18,8 @@ public class WebhookConfig {
     private String externalSenderUrl;
 
     public WebhookConfig() {
+        adminUUID = UUID.randomUUID().toString();
+        senderUUID = UUID.randomUUID().toString();
     }
 
     public String getAdminUUID() {
