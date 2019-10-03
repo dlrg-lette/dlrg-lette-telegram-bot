@@ -1,9 +1,9 @@
 package org.dlrg.lette.telegrambot.data;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.stereotype.Service;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Service
+@Document(collection = "chat")
 public class Chat {
 
     @Id

@@ -6,25 +6,19 @@ import org.apache.logging.log4j.Logger;
 import org.dlrg.lette.telegrambot.AuthConfig;
 import org.dlrg.lette.telegrambot.WebhookConfig;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service
 public class AdminMenu {
     private static final Logger log = LogManager.getLogger(AdminMenu.class);
 
-    private static AdminMenu instance;
-
-    @Autowired
     private WebhookConfig webhookConfig;
-
-    @Autowired
     private AuthConfig authConfig;
 
-    private AdminMenu() { }
-
-    public static AdminMenu getInstance() {
-        if (instance == null) {
-            instance = new AdminMenu();
-        }
-        return instance;
+    @Autowired
+    public AdminMenu(WebhookConfig webhookConfig, AuthConfig authConfig) {
+        this.webhookConfig = webhookConfig;
+        this.authConfig = authConfig;
     }
 
     public void processUpdate(Update update) {

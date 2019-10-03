@@ -10,33 +10,25 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.dlrg.lette.telegrambot.data.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class SenderMenu {
     private static final Logger log = LogManager.getLogger(SenderMenu.class);
 
-    private static SenderMenu instance;
-
-    @Autowired
     private ChatRepository chatRepository;
-
-    @Autowired
     private CategoryRepository categoryRepository;
-
-    @Autowired
     private UserRepository userRepository;
 
-    private SenderMenu() {
-    }
-
-    public static SenderMenu getInstance() {
-        if (instance == null) {
-            instance = new SenderMenu();
-        }
-        return instance;
+    @Autowired
+    public SenderMenu(ChatRepository chatRepository, CategoryRepository categoryRepository, UserRepository userRepository) {
+        this.chatRepository = chatRepository;
+        this.categoryRepository = categoryRepository;
+        this.userRepository = userRepository;
     }
 
     public void processUpdate(Update update, String senderBotToken) {
@@ -46,19 +38,26 @@ public class SenderMenu {
         // Prüfen ob normale Nachricht / Kommando oder Inline-Query Result
         if (update.message() != null) {
             long chatId = update.message().chat().id();
-            int userId = update.message().contact().userId();
+            int userId = update.message().from().id();
 
             // Prüe Kommando
             switch (update.message().text()) {
                 case "/start":
-                case "/abonnieren":
-                    chatRepository.save(new Chat(chatId, "abonnieren"));
+                case "/abos":
+                    if (chatRepository.existsById(chatId)) {
+                        chatRepository.save(new Chat(chatId, "abos"));
+                    } else {
+                        chatRepository.insert(new Chat(chatId, "abos"));
+                    }
                     sendCategoryStatus(adminBot, userId, chatId);
                     break;
 
                 case "/ende":
-                case "/deabonnieren":
-                    chatRepository.save(new Chat(chatId, "deabonnieren"));
+                    if (chatRepository.existsById(chatId)) {
+                        chatRepository.save(new Chat(chatId, "deabonnieren"));
+                    } else {
+                        chatRepository.insert(new Chat(chatId, "deabonnieren"));
+                    }
                     sendCategoryStatus(adminBot, userId, chatId);
                     break;
 
@@ -86,6 +85,8 @@ public class SenderMenu {
         User Kategorien abrufen
         Button mit Text erstellen
         -> Symbol für Abo-Status hinzufügen
+        -> Haken: \u2705 - ✅
+        -> :no_entry: \26d4 - ⛔
         Ausgeben
          */
 
@@ -94,23 +95,49 @@ public class SenderMenu {
 
         // Abonnierte Kategorien des Users ermitteln
         Optional<User> optionalUser = userRepository.findById(userId);
+        List<Integer> userCategories = new ArrayList<Integer>();
         if (optionalUser.isPresent()) {
-            List<Integer> userCategories = optionalUser.get().categories;
-
+            userCategories = optionalUser.get().categories;
         } else {
             // Benutzer anlegen
-            userRepository.save(new User(userId));
+            userRepository.insert(new User(userId));
+        }
+
+        // Button mit Text erstellen
+        List<InlineKeyboardButton> inlineKeyboardButtons = new ArrayList<InlineKeyboardButton>();
+
+        // "Alle" Funktionsbutton
+//        new InlineKeyboardButton("Alle Kategorien").callbackData("all")
+
+        for (Category category : categories) {
+            String btnText = "";
+            String callbackData = "";
+
+            // Ist die Kategorie bereits abonniert?
+            if (userCategories.contains(category.id)) {
+                // Ist bereits abonniert
+                btnText = String.format("%s ✅", category.description);
+                callbackData = category.id + ";true";
+            } else {
+                // Ist nicht abonniert
+                btnText = String.format("%s ⛔", category.description);
+                callbackData = category.id + ";false";
+            }
+            // Button erstellen und zur Liste hinzufügen
+            inlineKeyboardButtons.add(new InlineKeyboardButton(btnText).callbackData(callbackData));
         }
 
         // Buttons zurückgeben
         SendMessage sendMessage = new SendMessage(chatId, "Zu folgenden Kategorien können Informationen erhalten werden, bitte auswählen:");
-        sendMessage.replyMarkup(
-                new InlineKeyboardMarkup(
-                        new InlineKeyboardButton[]{
-                                new InlineKeyboardButton("Button 1").callbackData("1"),
-                                new InlineKeyboardButton("Button 2").callbackData("2")
-                        }));
 
+        // Liste zu Array konvertieren
+        InlineKeyboardButton[] keyboardButtons = new InlineKeyboardButton[inlineKeyboardButtons.size()];
+        keyboardButtons = inlineKeyboardButtons.toArray(keyboardButtons);
+
+        // Button zum Call hinzufügen
+        sendMessage.replyMarkup(new InlineKeyboardMarkup(keyboardButtons));
+
+        // Senden
         BaseResponse inlineMessage = bot.execute(sendMessage);
 
         if (!inlineMessage.isOk()) {

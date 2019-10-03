@@ -4,11 +4,11 @@ import com.pengrad.telegrambot.BotUtils;
 import com.pengrad.telegrambot.model.Update;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.dlrg.lette.telegrambot.data.Chat;
 import org.dlrg.lette.telegrambot.data.ChatRepository;
 import org.dlrg.lette.telegrambot.menu.AdminMenu;
 import org.dlrg.lette.telegrambot.menu.SenderMenu;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,14 +17,18 @@ import org.springframework.web.bind.annotation.*;
 public class WebhookController {
     private static final Logger log = LogManager.getLogger(WebhookController.class);
 
-    @Autowired
     private WebhookConfig webhookConfig;
-
-    @Autowired
     private AuthConfig authConfig;
+    private SenderMenu senderMenu;
+    private AdminMenu adminMenu;
 
     @Autowired
-    private ChatRepository chatRepository;
+    public WebhookController(WebhookConfig webhookConfig, AuthConfig authConfig, SenderMenu senderMenu, AdminMenu adminMenu) {
+        this.webhookConfig = webhookConfig;
+        this.authConfig = authConfig;
+        this.senderMenu = senderMenu;
+        this.adminMenu = adminMenu;
+    }
 
     // Update
     @RequestMapping(method = RequestMethod.POST, path = "/update/{uuid}")
@@ -37,11 +41,11 @@ public class WebhookController {
         if (uuid.equalsIgnoreCase(webhookConfig.getAdminUUID())) {
             // Admin Bot
             log.debug("Admin Update Received, processing in asynchronous task...");
-            new Thread( () -> AdminMenu.getInstance().processUpdate(update)).start();
+            new Thread( () -> adminMenu.processUpdate(update)).start();
         } else if (uuid.equalsIgnoreCase(webhookConfig.getSenderUUID())) {
             // Sender Bot
             log.debug("Sender Update Received, processing in asynchronous task...");
-            new Thread( () -> SenderMenu.getInstance().processUpdate(update, authConfig.getSenderBotToken())).start();
+            new Thread( () -> senderMenu.processUpdate(update, authConfig.getSenderBotToken())).start();
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
