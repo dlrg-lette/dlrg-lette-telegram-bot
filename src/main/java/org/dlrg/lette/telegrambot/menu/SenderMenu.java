@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import org.dlrg.lette.telegrambot.data.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +29,8 @@ public class SenderMenu {
     @Autowired
     private UserRepository userRepository;
 
-    private SenderMenu() { }
+    private SenderMenu() {
+    }
 
     public static SenderMenu getInstance() {
         if (instance == null) {
@@ -43,44 +45,27 @@ public class SenderMenu {
 
         // Prüfen ob normale Nachricht / Kommando oder Inline-Query Result
         if (update.message() != null) {
+            long chatId = update.message().chat().id();
+            int userId = update.message().contact().userId();
+
             // Prüe Kommando
             switch (update.message().text()) {
                 case "/start":
                 case "/abonnieren":
-                    chatRepository.save(new Chat(update.message().chat().id(), "abonnieren", ""));
-
-                    // Kategorien abrufen
-                    List<Category> categories = categoryRepository.findAll();
-
-                    // Abonnierte Kategorien des Users ermitteln
-                    int currentUserId = update.message().contact().userId();
-                    Optional<User> optionalUser = userRepository.findById(currentUserId);
-                    if (optionalUser.isPresent()) {
-                        List<Category> userCategories = optionalUser.get().categories;
-                    } else {
-                        // Benutzer anlegen
-                        userRepository.save(new User(update.message().contact().userId()));
-                    }
-
-                    // Buttons zurückgeben
-
+                    chatRepository.save(new Chat(chatId, "abonnieren"));
+                    sendCategoryStatus(adminBot, userId, chatId);
                     break;
-            }
-            if (update.message().text().equals("/inline")) {
-                SendMessage sendMessage = new SendMessage(update.message().chat().id(), "Test inline Buttons...");
-                sendMessage.replyMarkup(new InlineKeyboardMarkup(new InlineKeyboardButton[]{new InlineKeyboardButton("Button 1").callbackData("1"), new InlineKeyboardButton("Button 2").callbackData("2")}));
 
-                BaseResponse inlineMessage = adminBot.execute(sendMessage);
+                case "/ende":
+                case "/deabonnieren":
+                    chatRepository.save(new Chat(chatId, "deabonnieren"));
+                    sendCategoryStatus(adminBot, userId, chatId);
+                    break;
 
-                if (!inlineMessage.isOk()) {
-                    log.error(String.format("%d - %s", inlineMessage.errorCode(), inlineMessage.description()));
-                } else {
-                    log.info("Mongo Entry exists: " + chatRepository.existsById(update.message().chat().id()));
-
-                    log.info("Chat ID: " + update.message().chat().id());
-                    Chat newChat = new Chat(update.message().chat().id(), "status", "message");
-                    chatRepository.save(newChat);
-                }
+                case "/abbrechen":
+                    // Status entfernen ubnd Antwort senden
+                    chatRepository.deleteById(chatId);
+                    break;
             }
         }
 
@@ -90,6 +75,46 @@ public class SenderMenu {
             if (!inlineMessage.isOk()) {
                 log.error(String.format("%d - %s", inlineMessage.errorCode(), inlineMessage.description()));
             }
+        }
+    }
+
+    private void sendCategoryStatus(TelegramBot bot, int userId, Long chatId) {
+
+
+        /*
+        Kategorien abrufen
+        User Kategorien abrufen
+        Button mit Text erstellen
+        -> Symbol für Abo-Status hinzufügen
+        Ausgeben
+         */
+
+        // Kategorien abrufen
+        List<Category> categories = categoryRepository.findAll();
+
+        // Abonnierte Kategorien des Users ermitteln
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isPresent()) {
+            List<Integer> userCategories = optionalUser.get().categories;
+
+        } else {
+            // Benutzer anlegen
+            userRepository.save(new User(userId));
+        }
+
+        // Buttons zurückgeben
+        SendMessage sendMessage = new SendMessage(chatId, "Zu folgenden Kategorien können Informationen erhalten werden, bitte auswählen:");
+        sendMessage.replyMarkup(
+                new InlineKeyboardMarkup(
+                        new InlineKeyboardButton[]{
+                                new InlineKeyboardButton("Button 1").callbackData("1"),
+                                new InlineKeyboardButton("Button 2").callbackData("2")
+                        }));
+
+        BaseResponse inlineMessage = bot.execute(sendMessage);
+
+        if (!inlineMessage.isOk()) {
+            log.error(inlineMessage.errorCode() + " - " + inlineMessage.description());
         }
     }
 }

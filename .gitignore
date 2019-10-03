@@ -32,3 +32,5 @@ build/
 
 ### Spring Boot Profile-Settings ###
 !/application*.properties
+
+application-dev.properties

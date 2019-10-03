@@ -8,7 +8,7 @@ public class User {
 
     @Id
     public Integer id;
-    public List<Category> categories;
+    public List<Integer> categories;
 
     public User() {
     }

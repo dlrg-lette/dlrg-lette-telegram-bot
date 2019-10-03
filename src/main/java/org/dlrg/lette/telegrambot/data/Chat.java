@@ -14,6 +14,11 @@ public class Chat {
     public Chat() {
     }
 
+    public Chat(Long id, String status) {
+        this.id = id;
+        this.status = status;
+    }
+
     public Chat(Long id, String status, String message) {
         this.status = status;
         this.message = message;
