@@ -10,13 +10,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class AdminMenu {
     private static final Logger log = LogManager.getLogger(AdminMenu.class);
 
+    private static AdminMenu instance;
+
     @Autowired
     private WebhookConfig webhookConfig;
 
     @Autowired
     private AuthConfig authConfig;
 
-    public static void processUpdate(Update update) {
+    private AdminMenu() { }
+
+    public static AdminMenu getInstance() {
+        if (instance == null) {
+            instance = new AdminMenu();
+        }
+        return instance;
+    }
+
+    public void processUpdate(Update update) {
 
     }
 }

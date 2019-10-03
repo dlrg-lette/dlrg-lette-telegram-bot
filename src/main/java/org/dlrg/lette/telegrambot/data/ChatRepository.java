@@ -5,9 +5,5 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-\|
-@Repository y
 public interface ChatRepository extends MongoRepository<Chat, Long> {
-
-    public List<Chat> findByStatus(String status);
 }

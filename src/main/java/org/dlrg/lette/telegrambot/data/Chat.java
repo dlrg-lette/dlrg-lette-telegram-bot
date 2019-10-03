@@ -7,14 +7,14 @@ import org.springframework.stereotype.Service;
 public class Chat {
 
     @Id
-    public String id;
+    public Long id;
     public String status;
     public String message;
 
     public Chat() {
     }
 
-    public Chat(String status, String message) {
+    public Chat(Long id, String status, String message) {
         this.status = status;
         this.message = message;
     }
