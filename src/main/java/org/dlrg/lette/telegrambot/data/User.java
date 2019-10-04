@@ -3,6 +3,7 @@ package org.dlrg.lette.telegrambot.data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "user")
@@ -17,5 +18,6 @@ public class User {
 
     public User(Integer id) {
         this.id = id;
+        this.categories = new ArrayList<>();
     }
 }
