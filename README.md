@@ -29,4 +29,4 @@ für den schnellen Informationsaustausch.
 
 Bis auf `texts` sind alle collections leer
 ### Initaldaten `texts` collection
-[Initialdaten der `texts` collection im JSON Format](../blob/master/texts.collection.initial.json)
+[Initialdaten der `texts` collection im JSON Format](master/texts.collection.initial.json)
