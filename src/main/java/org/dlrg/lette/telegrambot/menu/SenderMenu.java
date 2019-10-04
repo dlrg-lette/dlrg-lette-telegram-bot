@@ -23,14 +23,14 @@ import java.util.Optional;
 public class SenderMenu {
     private static final Logger log = LogManager.getLogger(SenderMenu.class);
 
-    private ChatRepository chatRepository;
+    private SenderChatRepository senderChatRepository;
     private CategoryRepository categoryRepository;
     private UserRepository userRepository;
     private TextRepository texts;
 
     @Autowired
-    public SenderMenu(ChatRepository chatRepository, CategoryRepository categoryRepository, UserRepository userRepository, TextRepository textRepository) {
-        this.chatRepository = chatRepository;
+    public SenderMenu(SenderChatRepository senderChatRepository, CategoryRepository categoryRepository, UserRepository userRepository, TextRepository textRepository) {
+        this.senderChatRepository = senderChatRepository;
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
         this.texts = textRepository;
@@ -49,37 +49,31 @@ public class SenderMenu {
                 switch (update.message().text()) {
                     case "/start":
                         sendWelcomeMessage(senderBot, chatId, update.message().from().firstName());
-                        if (chatRepository.existsById(chatId)) {
-                            chatRepository.save(new Chat(chatId, "abos"));
-                        } else {
-                            chatRepository.insert(new Chat(chatId, "abos"));
-                        }
+                        senderChatRepository.save(new SenderChat(chatId, "abos"));
                         sendCategoryStatus(senderBot, userId, chatId);
                         break;
 
                     case "/abos":
-                        if (chatRepository.existsById(chatId)) {
-                            chatRepository.save(new Chat(chatId, "abos"));
-                        } else {
-                            chatRepository.insert(new Chat(chatId, "abos"));
-                        }
+                        senderChatRepository.save(new SenderChat(chatId, "abos"));
                         sendCategoryStatus(senderBot, userId, chatId);
                         break;
 
                     case "/ende":
                         // User löschen
                         userRepository.deleteById(userId);
+                        // ggf. Chat löschen
+                        senderChatRepository.deleteById(chatId);
 
                         String endMessageText = texts.findById("END").get().text;
-                        SendMessage endMessage = new SendMessage(chatId, endMessageText);
+                        SendMessage endMessage = new SendMessage(chatId, String.format(endMessageText, update.message().from().firstName()));
                         senderBot.execute(endMessage);
                         LeaveChat leaveChat = new LeaveChat(chatId);
                         senderBot.execute(leaveChat);
                         break;
 
                     case "/abbrechen":
-                        // Status entfernen ubnd Antwort senden
-                        chatRepository.deleteById(chatId);
+                        // Status entfernen und Antwort senden
+                        senderChatRepository.deleteById(chatId);
                         String cancelMessageText = texts.findById("CANCEL").get().text;
                         SendMessage cancelMessage = new SendMessage(chatId, cancelMessageText);
                         senderBot.execute(cancelMessage);
@@ -95,7 +89,7 @@ public class SenderMenu {
                 int messageId = update.callbackQuery().message().messageId();
 
                 // Chat Status abrufen
-                Optional<Chat> optionalChat = chatRepository.findById(chatId);
+                Optional<SenderChat> optionalChat = senderChatRepository.findById(chatId);
                 String chatStatus = "";
                 if (optionalChat.isPresent()) {
                     chatStatus = optionalChat.get().status;
@@ -114,12 +108,18 @@ public class SenderMenu {
                 }
             }
         } catch (Exception e) {
-            log.error(e.getStackTrace());
+            log.error(e.getMessage());
         }
     }
 
     private void sendWelcomeMessage(TelegramBot bot, Long chatId, String forename) {
+        String welcomeMessageText = texts.findById("WELCOME_SENDER").get().text;
+        SendMessage welcomeMessage = new SendMessage(chatId, String.format(welcomeMessageText, forename));
+        BaseResponse welcomeResponse = bot.execute(welcomeMessage);
 
+        if (!welcomeResponse.isOk()) {
+            log.error(String.format("Error while sending welcome_message: %d - %s", welcomeResponse.errorCode(), welcomeResponse.description()));
+        }
     }
 
     private void processAboResponse(int userId, String data) {
@@ -134,7 +134,7 @@ public class SenderMenu {
         } else {
             // Benutzer anlegen
             user = new User(userId);
-            user = userRepository.insert(user);
+            user = userRepository.save(user);
         }
 
         if (isSubscribed) {
@@ -163,13 +163,12 @@ public class SenderMenu {
         List<Integer> userCategories = new ArrayList<>();
         if (optionalUser.isPresent()) {
             userCategories = optionalUser.get().categories;
-
             if (userCategories == null) {
                 userCategories = new ArrayList<>();
             }
         } else {
             // Benutzer anlegen
-            userRepository.insert(new User(userId));
+            userRepository.save(new User(userId));
         }
 
         // Button mit Text erstellen

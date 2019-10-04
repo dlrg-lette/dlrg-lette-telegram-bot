@@ -1,0 +1,16 @@
+{"_id":"BEAR","text":"Es ist leider ein Fehler aufgetreten. Melden Sie dies bitte dem Webmaster der Ortsgruppe. Fehler: BEAR - Chat: %d - Zeitpunkt: %s"}
+{"_id":"CANCEL","text":"Aktuellen Befehl abgebrochen..."}
+{"_id":"END","text":"Schade, dass du uns verlässt %s 😟.Ich habe alle Daten die ich von dir gespeichert habe gelöscht 🤖. Auf wiedersehen 👋"}
+{"_id":"SUBSCRIBED","text":"%s ✅"}
+{"_id":"UNSUBSCRIBED","text":"%s ⛔"}
+{"_id":"CATEGORY_SELECTION","text":"Zu folgenden Kategorien können Informationen bekommen werden, bitte auswählen:"}
+{"_id":"MESSAGE_CATEGORY_SELECTION","text":"An die Empfänger welcher Kategorie soll eine Nachricht gesendet werden? Bitte auswählen:"}
+{"_id":"CONFIRM_MESSAGE_CATEGORY","text":"Kategorie %s ausgewählt, bitte zu sendende Nachricht eingeben:"}
+{"_id":"CONFIRM_SEND_MESSAGE","text":"Wollen Sie diese Nachricht wirklich senden?"}
+{"_id":"CONFIRM_BUTTON","text":"✅ Nachricht senden"}
+{"_id":"DECLINE_BUTTON","text":"⛔ ABBRECHEN!"}
+{"_id":"CONFIRM_CANCEL","text":"ABGEBROCHEN, die Nachricht wurde nicht gesendet!"}
+{"_id":"WELCOME_SENDER","text":"Willkommen %s, beim Informations-Bot der DLRG OG Lette e. V. Über /kategorien kannst du auswählen zu welchen Themengebieten du Informationen erhalten möchtest. Über /ende vergesse ich dich umgehend und alle deine Daten."}
+{"_id":"WELCOME_ADMIN","text":"Willkommen Moderator %s. Über /nachricht kannst du an alle Benutzer, die diese Kategorie abonniert haben, eine Nachricht senden."}
+{"_id":"CONFIRM_SEND_TO_MODERATOR","text":"Nachricht an %d Abonnenten zugestellt. ✅"}
+{"_id":"UNKNOWN_COMMAND","text":"Entschuldige, das habe ich nicht verstanden, oder das Kommando kann ich noch nicht 😔."}

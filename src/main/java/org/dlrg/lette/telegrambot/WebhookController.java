@@ -4,11 +4,9 @@ import com.pengrad.telegrambot.BotUtils;
 import com.pengrad.telegrambot.model.Update;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.dlrg.lette.telegrambot.data.ChatRepository;
 import org.dlrg.lette.telegrambot.menu.AdminMenu;
 import org.dlrg.lette.telegrambot.menu.SenderMenu;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,11 +39,11 @@ public class WebhookController {
         if (uuid.equalsIgnoreCase(webhookConfig.getAdminUUID())) {
             // Admin Bot
             log.debug("Admin Update Received, processing in asynchronous task...");
-            new Thread( () -> adminMenu.processUpdate(update)).start();
+            new Thread(() -> adminMenu.processUpdate(update, authConfig.getAdminBotToken(), authConfig.getSenderBotToken())).start();
         } else if (uuid.equalsIgnoreCase(webhookConfig.getSenderUUID())) {
             // Sender Bot
             log.debug("Sender Update Received, processing in asynchronous task...");
-            new Thread( () -> senderMenu.processUpdate(update, authConfig.getSenderBotToken())).start();
+            new Thread(() -> senderMenu.processUpdate(update, authConfig.getSenderBotToken())).start();
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
