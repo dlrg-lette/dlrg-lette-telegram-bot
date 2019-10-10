@@ -13,6 +13,11 @@ public class Category {
     public Category() {
     }
 
+    public Category(Integer id, String description) {
+        this.id = id;
+        this.description = description;
+    }
+
     @Override
     public boolean equals(Object object) {
         if (object.getClass() == Category.class) {

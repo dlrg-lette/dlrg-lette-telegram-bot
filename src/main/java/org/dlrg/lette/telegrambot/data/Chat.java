@@ -7,8 +7,13 @@ public class Chat {
     @Id
     public Long id;
     public String status;
+    public Integer lastMessage;
 
     public Chat() {
+    }
+
+    public Chat(Long id) {
+        this.id = id;
     }
 
     public Chat(Long id, String status) {

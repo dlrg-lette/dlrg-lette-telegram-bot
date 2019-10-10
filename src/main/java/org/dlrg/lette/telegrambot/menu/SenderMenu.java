@@ -171,32 +171,33 @@ public class SenderMenu {
             userRepository.save(new User(userId));
         }
 
-        // Button mit Text erstellen
-        List<InlineKeyboardButton> inlineKeyboardButtons = new ArrayList<>();
+        // Button mit Text erstellen, 2 Button pro Zeile
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup(new InlineKeyboardButton[categories.size() / 2][2]);
 
-        for (Category category : categories) {
-            String btnText;
-            String callbackData;
+        int counter = 0;
+        for (int column = 0; column < categories.size() / 2; column++) {
+            for (int row = 0; row < 2; row++) {
+                Category category = categories.get(counter++);
+                String btnText;
+                String callbackData;
 
-            // Ist die Kategorie bereits abonniert?
-            if (userCategories.contains(category.id)) {
-                // Ist bereits abonniert
-                String subText = texts.findById("SUBSCRIBED").get().text;
-                btnText = String.format(subText, category.description);
-                callbackData = category.id + ";true";
-            } else {
-                // Ist nicht abonniert
-                String unsubText = texts.findById("UNSUBSCRIBED").get().text;
-                btnText = String.format(unsubText, category.description);
-                callbackData = category.id + ";false";
+                // Ist die Kategorie bereits abonniert?
+                if (userCategories.contains(category.id)) {
+                    // Ist bereits abonniert
+                    String subText = texts.findById("SUBSCRIBED").get().text;
+                    btnText = String.format(subText, category.description);
+                    callbackData = category.id + ";true";
+                } else {
+                    // Ist nicht abonniert
+                    String unsubText = texts.findById("UNSUBSCRIBED").get().text;
+                    btnText = String.format(unsubText, category.description);
+                    callbackData = category.id + ";false";
+                }
+
+                // Button erstellen und zur Liste hinzufügen, an passende Position (max. 2 pro Zeile)
+                markup.inlineKeyboard()[column][row] = new InlineKeyboardButton(btnText).callbackData(callbackData);
             }
-            // Button erstellen und zur Liste hinzufügen
-            inlineKeyboardButtons.add(new InlineKeyboardButton(btnText).callbackData(callbackData));
         }
-
-        // Button Liste zu Array konvertieren
-        InlineKeyboardButton[] keyboardButtons = new InlineKeyboardButton[inlineKeyboardButtons.size()];
-        keyboardButtons = inlineKeyboardButtons.toArray(keyboardButtons);
 
         // Falls Message-ID vorhanden bestehende Nachricht aktualisieren
         if (messageId == null) {
@@ -206,7 +207,7 @@ public class SenderMenu {
             SendMessage sendMessage = new SendMessage(chatId, categorySelectionText);
 
             // Button zum Call hinzufügen
-            sendMessage.replyMarkup(new InlineKeyboardMarkup(keyboardButtons));
+            sendMessage.replyMarkup(markup);
 
             // Senden
             BaseResponse messageResponse = bot.execute(sendMessage);
@@ -216,7 +217,7 @@ public class SenderMenu {
             }
         } else {
             // Bestehende Nachricht aktualisieren
-            EditMessageReplyMarkup editMessageReplyMarkup = new EditMessageReplyMarkup(chatId, messageId).replyMarkup(new InlineKeyboardMarkup(keyboardButtons));
+            EditMessageReplyMarkup editMessageReplyMarkup = new EditMessageReplyMarkup(chatId, messageId).replyMarkup(markup);
 
             // Senden
             BaseResponse messageResponse = bot.execute(editMessageReplyMarkup);
