@@ -5,6 +5,7 @@ import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import com.pengrad.telegrambot.request.EditMessageReplyMarkup;
+import com.pengrad.telegrambot.request.EditMessageText;
 import com.pengrad.telegrambot.request.LeaveChat;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.BaseResponse;
@@ -48,14 +49,14 @@ public class SenderMenu {
                 // Prüe Kommando
                 switch (update.message().text()) {
                     case "/start":
-                        sendWelcomeMessage(senderBot, chatId, update.message().from().firstName());
+                        sendWelcomeMessage(senderBot, chatId, userId, update.message().from().firstName());
                         senderChatRepository.save(new SenderChat(chatId, "abos"));
-                        sendCategoryStatus(senderBot, userId, chatId);
+                        sendCategoryStatus(senderBot, userId, chatId, null);
                         break;
 
                     case "/abos":
                         senderChatRepository.save(new SenderChat(chatId, "abos"));
-                        sendCategoryStatus(senderBot, userId, chatId);
+                        sendCategoryStatus(senderBot, userId, chatId, null);
                         break;
 
                     case "/ende":
@@ -88,6 +89,17 @@ public class SenderMenu {
                 String data = update.callbackQuery().data();
                 int messageId = update.callbackQuery().message().messageId();
 
+                // Prüfe ob Menü beendet wurde
+                if (data.equals("cancel")) {
+                    EditMessageText showFinishedText = new EditMessageText(chatId, messageId, texts.findById("FINISHED_ABOS").get().text);
+                    BaseResponse response = senderBot.execute(showFinishedText);
+
+                    if (!response.isOk()) {
+                        log.error(String.format("Error while sending Abos finished message: %d - %s", response.errorCode(), response.description()));
+                    }
+                    return;
+                }
+
                 // Chat Status abrufen
                 Optional<SenderChat> optionalChat = senderChatRepository.findById(chatId);
                 String chatStatus = "";
@@ -96,7 +108,8 @@ public class SenderMenu {
                 }
 
                 // Weiteres Vorgehen je nach Chat Status
-                if ("abos".equals(chatStatus)) {// Abo-Antwort verarbeiten
+                if ("abos".equals(chatStatus)) {
+                    // Abo-Antwort verarbeiten
                     processAboResponse(userId, data);
                     // Aktualisierten Status ausgeben
                     sendCategoryStatus(senderBot, userId, chatId, messageId);
@@ -112,7 +125,13 @@ public class SenderMenu {
         }
     }
 
-    private void sendWelcomeMessage(TelegramBot bot, Long chatId, String forename) {
+    private void sendWelcomeMessage(TelegramBot bot, Long chatId, Integer userId, String forename) {
+        // User speichern (inkl. Name), nur wenn dieser nicht schon vorhanden ist
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()) {
+            userRepository.save(new User(userId, forename));
+        }
+
         String welcomeMessageText = texts.findById("WELCOME_SENDER").get().text;
         SendMessage welcomeMessage = new SendMessage(chatId, String.format(welcomeMessageText, forename));
         BaseResponse welcomeResponse = bot.execute(welcomeMessage);
@@ -149,10 +168,6 @@ public class SenderMenu {
         userRepository.save(user);
     }
 
-    private void sendCategoryStatus(TelegramBot bot, int userId, Long chatId) {
-        sendCategoryStatus(bot, userId, chatId, null);
-    }
-
     private void sendCategoryStatus(TelegramBot bot, int userId, Long chatId, Integer messageId) {
 
         // Kategorien abrufen
@@ -171,33 +186,35 @@ public class SenderMenu {
             userRepository.save(new User(userId));
         }
 
-        // Button mit Text erstellen, 2 Button pro Zeile
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup(new InlineKeyboardButton[categories.size() / 2][2]);
+        // Buttons mit Text erstellen, jeweils neue Zeile + Zurück Button
+        InlineKeyboardButton[][] buttons = new InlineKeyboardButton[categories.size() + 1][];
 
-        int counter = 0;
-        for (int column = 0; column < categories.size() / 2; column++) {
-            for (int row = 0; row < 2; row++) {
-                Category category = categories.get(counter++);
-                String btnText;
-                String callbackData;
+        for (int i = 0; i < categories.size(); i++) {
+            Category category = categories.get(i);
+            String btnText;
+            String callbackData;
 
-                // Ist die Kategorie bereits abonniert?
-                if (userCategories.contains(category.id)) {
-                    // Ist bereits abonniert
-                    String subText = texts.findById("SUBSCRIBED").get().text;
-                    btnText = String.format(subText, category.description);
-                    callbackData = category.id + ";true";
-                } else {
-                    // Ist nicht abonniert
-                    String unsubText = texts.findById("UNSUBSCRIBED").get().text;
-                    btnText = String.format(unsubText, category.description);
-                    callbackData = category.id + ";false";
-                }
-
-                // Button erstellen und zur Liste hinzufügen, an passende Position (max. 2 pro Zeile)
-                markup.inlineKeyboard()[column][row] = new InlineKeyboardButton(btnText).callbackData(callbackData);
+            // Ist die Kategorie bereits abonniert?
+            if (userCategories.contains(category.id)) {
+                // Ist bereits abonniert
+                String subText = texts.findById("SUBSCRIBED").get().text;
+                btnText = String.format(subText, category.description);
+                callbackData = category.id + ";true";
+            } else {
+                // Ist nicht abonniert
+                String unsubText = texts.findById("UNSUBSCRIBED").get().text;
+                btnText = String.format(unsubText, category.description);
+                callbackData = category.id + ";false";
             }
+
+            buttons[i] = new InlineKeyboardButton[]{new InlineKeyboardButton(btnText).callbackData(callbackData)};
         }
+
+        // Zurück Button hinzufügen
+        buttons[buttons.length - 1] = new InlineKeyboardButton[]{new InlineKeyboardButton(texts.findById("BACK_ADMINISTRATION_BUTTON").get().text).callbackData("cancel")};
+
+        // Inline Markup erstellen
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup(buttons);
 
         // Falls Message-ID vorhanden bestehende Nachricht aktualisieren
         if (messageId == null) {

@@ -16,7 +16,6 @@ import org.dlrg.lette.telegrambot.data.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -113,10 +112,25 @@ public class AdminMenu {
                                 adminChatRepository.save(currentChat);
 
                                 // Neue Kategoriebezeichnung übernehmen
-                                setNewCategoryDescription(adminBot, chatId, category, update.message().text());
+                                setNewCategoryDescription(category, update.message().text());
+
+                                // Menü ausgeben
+                                showChangeOrDeleteCategoryMenu(adminBot, chatId, null, false);
                                 return;
+
                             default:
-                                log.warn(String.format("Unknown chat status: %s", currentChat.status));
+                                // Chat löschen, whatever happend...
+                                adminChatRepository.deleteById(chatId);
+
+                                // Logmeldung ausgeben
+                                log.warn(String.format("UNICORN Error - Unknown chat status: %s", currentChat.status));
+
+                                // Benutzer benachrichtigen
+                                SendMessage unicornError = new SendMessage(chatId, texts.findById("UNICORN_ERROR").get().text);
+                                BaseResponse unicornErrorResponse = adminBot.execute(unicornError);
+                                if (!unicornErrorResponse.isOk()) {
+                                    log.error("Error while sending UNICORN error message: %d - %s: " + unicornErrorResponse.errorCode() + " - " + unicornErrorResponse.description());
+                                }
                                 return;
                         }
                     } else {
@@ -199,6 +213,21 @@ public class AdminMenu {
 
                 switch (currentChat.status) {
                     case "message":
+                        // Abbrechen abfangen
+                        if (data.equals("return")) {
+                            // Chat-Status löschen
+                            adminChatRepository.deleteById(chatId);
+
+                            // Nachrichtenversand abgebrochen
+                            EditMessageText editSendMessageText = new EditMessageText(chatId, messageId, texts.findById("CONFIRM_CANCEL").get().text);
+                            BaseResponse response = adminBot.execute(editSendMessageText);
+
+                            if (!response.isOk()) {
+                                log.error(String.format("Error while confirming send message cancel: %d - %s", response.errorCode(), response.description()));
+                            }
+                            return;
+                        }
+
                         // Kategorie in AdminChat speichern, neuer Status
                         currentChat.category = Integer.parseInt(data);
                         currentChat.status = "confirm";
@@ -214,6 +243,15 @@ public class AdminMenu {
 
                         // Unterscheiden ob bestätigt oder abgebrochen wurde
                         if (Boolean.parseBoolean(data)) {
+                            // Buttons deaktivieren
+                            // ReplyMarkup der Original-Nachricht ändern
+                            EditMessageReplyMarkup editMessageReplyMarkup = new EditMessageReplyMarkup(chatId, messageId).replyMarkup(new InlineKeyboardMarkup());
+                            BaseResponse editMarkupResponse = adminBot.execute(editMessageReplyMarkup);
+
+                            if (!editMarkupResponse.isOk()) {
+                                log.error("Error while changing 'confirm_message' reply_markup: " + editMarkupResponse.errorCode() + " - " + editMarkupResponse.description());
+                            }
+
                             // Senden an alle Abonnenten
                             sendMessageToCategory(senderBot, currentChat.category, update.callbackQuery().message().text());
 
@@ -244,6 +282,8 @@ public class AdminMenu {
                                 switch (action) {
                                     // Zurück
                                     case "return":
+                                        // Chat löschen / Status zurücksetzen
+                                        adminChatRepository.deleteById(chatId);
                                         showAdministrationFinishedText(adminBot, chatId, messageId);
                                         return;
 
@@ -254,50 +294,49 @@ public class AdminMenu {
 
                                     // Ändern Menü anzeigen
                                     case "change":
-                                        showChangeCategoryMenu(adminBot, chatId, messageId);
+                                        showChangeOrDeleteCategoryMenu(adminBot, chatId, messageId, false);
                                         return;
 
                                     // Löschen Menü anzeigen
                                     case "delete":
+                                        showChangeOrDeleteCategoryMenu(adminBot, chatId, messageId, true);
                                         return;
                                 }
                                 return;
 
                             // Erstell-Aktion
                             case "create":
-                                switch (action) {
-                                    // Zurück
-                                    case "return":
-                                        showCategoriesMenu(adminBot, chatId, messageId);
-                                        return;
-                                }
+                                showCategoriesMenu(adminBot, chatId, messageId);
                                 return;
 
                             // Ändern-Aktion
                             case "change":
-                                switch (action) {
+                                if ("return".equals(action)) {
                                     // Zurück
-                                    case "return":
-                                        showCategoriesMenu(adminBot, chatId, messageId);
-                                        return;
-
-                                    default:
-                                        // Eingabeaufforderung anzeigen
-                                        currentChat.status = "category;change";
-                                        currentChat.category = Integer.parseInt(action);
-                                        adminChatRepository.save(currentChat);
-                                        showEnterNewCategoryDescriptionText(adminBot, chatId, messageId, currentChat.category);
-                                        return;
+                                    showCategoriesMenu(adminBot, chatId, messageId);
+                                    return;
                                 }
 
-                                // Löschen-Aktion
+                                // Eingabeaufforderung anzeigen
+                                currentChat.status = "category;change";
+                                currentChat.category = Integer.parseInt(action);
+                                adminChatRepository.save(currentChat);
+                                showEnterNewCategoryDescriptionText(adminBot, chatId, messageId, currentChat.category);
+                                return;
+
+                            // Löschen-Aktion
                             case "delete":
-                                switch (action) {
-                                    // Zurück
-                                    case "return":
-                                        showCategoriesMenu(adminBot, chatId, messageId);
-                                        return;
+                                // Zurück
+                                if ("return".equals(action)) {
+                                    showCategoriesMenu(adminBot, chatId, messageId);
+                                    return;
                                 }
+
+                                // Kategorie löschen
+                                deleteCategory(adminBot, senderBot, chatId, action);
+
+                                // Menü wieder anzeigen
+                                showChangeOrDeleteCategoryMenu(adminBot, chatId, null, true);
                                 return;
                         }
 
@@ -314,6 +353,8 @@ public class AdminMenu {
                                 switch (moderatorAction) {
                                     // Zurück
                                     case "return":
+                                        // Chat löschen
+                                        adminChatRepository.deleteById(chatId);
                                         showAdministrationFinishedText(adminBot, chatId, messageId);
                                         return;
                                     case "add":
@@ -390,6 +431,39 @@ public class AdminMenu {
         }
     }
 
+    private void deleteCategory(TelegramBot adminBot, TelegramBot senderBot, long adminChatId, String categoryStringId) {
+        // Kategorie-ID parsen
+        int categoryId = Integer.parseInt(categoryStringId);
+        Category category = categoryRepository.findById(categoryId).get();
+        categoryRepository.deleteById(categoryId);
+
+        // Alle Benutzer ermitteln die die Kategorie abonniert haben und Benachrichtigen
+        List<User> users = userRepository.findAllByCategory(categoryId);
+
+        String userMessageText = texts.findById("SUBSCRIBER_CATEGORY_REMOVED").get().text;
+        for (User user : users) {
+            // Kategorie aus User-Profil entfernen
+            user.categories.removeIf(id -> id == categoryId);
+            userRepository.save(user);
+
+            // User benachrichtigen
+            SendMessage sendUserMessage = new SendMessage(user.id, String.format(userMessageText, user.name, category.description));
+            BaseResponse userMessageResponse = senderBot.execute(sendUserMessage);
+
+            if (!userMessageResponse.isOk()) {
+                log.error(String.format("Error while sending category_deleted to subscriber %d | %s for category %d | %s", user.id, user.name, category.id, category.description));
+            }
+        }
+
+        // Admin benachrichtigen
+        SendMessage categoryRemovedMessage = new SendMessage(adminChatId, String.format(texts.findById("CONFIRM_CATEGORY_REMOVED").get().text, category.description, users.size()));
+        BaseResponse adminResponse = adminBot.execute(categoryRemovedMessage);
+
+        if (!adminResponse.isOk()) {
+            log.error(String.format("Error while sending confirm_category_removed: %d - %s", adminResponse.errorCode(), adminResponse.description()));
+        }
+    }
+
     private void addNewModerator(TelegramBot adminBot, long chatId, Contact contact) {
         Moderator moderator = new Moderator(contact.userId(), contact.firstName());
         moderatorRepository.save(moderator);
@@ -438,28 +512,21 @@ public class AdminMenu {
         // Moderatoren ermitteln
         List<Moderator> moderators = moderatorRepository.findAll();
 
-        // Button mit Text erstellen, 2 Button pro Zeile
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup(new InlineKeyboardButton[(moderators.size() / 2) + 1][]);
+        // Buttons mit Text erstellen, jeweils neue Zeile + Zurück Button
+        InlineKeyboardButton[][] buttons = new InlineKeyboardButton[moderators.size() + 1][];
 
-        int counter = 0;
-        for (int column = 0; column < (moderators.size() / 2) + 1; column++) {
-            // Zurück Button hinzufügen
-            if (column == (moderators.size() / 2)) {
-                markup.inlineKeyboard()[column] = new InlineKeyboardButton[]{new InlineKeyboardButton(texts.findById("BACK_ADMINISTRATION_BUTTON").get().text).callbackData(action + "return")};
-                continue;
-            } else {
-                markup.inlineKeyboard()[column] = new InlineKeyboardButton[2];
-            }
-
-            for (int row = 0; row < 2; row++) {
-                Moderator moderator = moderators.get(counter++);
-
-                // Button text abhängig davon oder Moderator Admin ist
-                String buttonText = moderator.isAdministrator ? String.format(texts.findById("ADMIN_SUFFIX").get().text, moderator.firstName) : moderator.firstName;
-                // Button erstellen und zur Liste hinzufügen, an passende Position (max. 2 pro Zeile)
-                markup.inlineKeyboard()[column][row] = new InlineKeyboardButton(buttonText).callbackData(action + moderator.id);
-            }
+        for (int i = 0; i < moderators.size(); i++) {
+            Moderator moderator = moderators.get(i);
+            // Button text abhängig davon oder Moderator Admin ist
+            String buttonText = moderator.isAdministrator ? String.format(texts.findById("ADMIN_SUFFIX").get().text, moderator.firstName) : moderator.firstName;
+            buttons[i] = new InlineKeyboardButton[]{new InlineKeyboardButton(buttonText).callbackData(action + moderator.id)};
         }
+
+        // Zurück Button hinzufügen
+        buttons[buttons.length - 1] = new InlineKeyboardButton[]{new InlineKeyboardButton(texts.findById("BACK_ADMINISTRATION_BUTTON").get().text).callbackData(action + "return")};
+
+        // Inline Markup erstellen
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup(buttons);
 
         // Nachricht aktualisieren / Neu senden
         BaseResponse response;
@@ -565,12 +632,9 @@ public class AdminMenu {
         }
     }
 
-    private void setNewCategoryDescription(TelegramBot adminBot, long chatId, int category, String newDescription) {
+    private void setNewCategoryDescription(int category, String newDescription) {
         // Geänderte Kategorie speichern
         categoryRepository.save(new Category(category, newDescription));
-
-        // Menü ausgeben
-        showChangeCategoryMenu(adminBot, chatId, null);
     }
 
     private void deleteMessageFromChat(TelegramBot adminBot, long chatId, int messageId) {
@@ -581,38 +645,35 @@ public class AdminMenu {
         }
     }
 
-    private void showChangeCategoryMenu(TelegramBot adminBot, long chatId, Integer messageId) {
+    private void showChangeOrDeleteCategoryMenu(TelegramBot adminBot, long chatId, Integer messageId, boolean delete) {
+        // Callback Data bestimmen
+        String callbackPrefix = delete ? "delete;" : "change;";
+
         // Kategorien ermitteln
         List<Category> categories = categoryRepository.findAll();
 
-        // Button mit Text erstellen, 2 Button pro Zeile
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup(new InlineKeyboardButton[(categories.size() / 2) + 1][]);
+        // Buttons mit Text erstellen, jeweils neue Zeile + Zurück Button
+        InlineKeyboardButton[][] buttons = new InlineKeyboardButton[categories.size() + 1][];
 
-        int counter = 0;
-        for (int column = 0; column < (categories.size() / 2) + 1; column++) {
-            // Zurück Button hinzufügen
-            if (column == (categories.size() / 2)) {
-                markup.inlineKeyboard()[column] = new InlineKeyboardButton[]{new InlineKeyboardButton(texts.findById("BACK_ADMINISTRATION_BUTTON").get().text).callbackData("change;return")};
-                continue;
-            } else {
-                markup.inlineKeyboard()[column] = new InlineKeyboardButton[2];
-            }
-
-            for (int row = 0; row < 2; row++) {
-                Category category = categories.get(counter++);
-
-                // Button erstellen und zur Liste hinzufügen, an passende Position (max. 2 pro Zeile)
-                markup.inlineKeyboard()[column][row] = new InlineKeyboardButton(category.description).callbackData("change;" + category.id);
-            }
+        for (int i = 0; i < categories.size(); i++) {
+            Category category = categories.get(i);
+            buttons[i] = new InlineKeyboardButton[]{new InlineKeyboardButton(category.description).callbackData(callbackPrefix + category.id)};
         }
+
+        // Zurück Button hinzufügen
+        buttons[buttons.length - 1] = new InlineKeyboardButton[]{new InlineKeyboardButton(texts.findById("BACK_ADMINISTRATION_BUTTON").get().text).callbackData(callbackPrefix + "return")};
+
+        // Inline Markup erstellen
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup(buttons);
 
         // Nachricht aktualisieren / Neu senden
         BaseResponse response;
+        String messageText = delete ? texts.findById("DELETE_CATEGORY_ADMINISTRATION_TEXT").get().text : texts.findById("CHANGE_CATEGORY_ADMINISTRATION_TEXT").get().text;
         if (messageId == null) {
-            SendMessage sendMessage = new SendMessage(chatId, texts.findById("CHANGE_CATEGORY_ADMINISTRATION_TEXT").get().text).replyMarkup(markup);
+            SendMessage sendMessage = new SendMessage(chatId, messageText).replyMarkup(markup);
             response = adminBot.execute(sendMessage);
         } else {
-            EditMessageText editMessage = new EditMessageText(chatId, messageId, texts.findById("CHANGE_CATEGORY_ADMINISTRATION_TEXT").get().text).replyMarkup(markup);
+            EditMessageText editMessage = new EditMessageText(chatId, messageId, messageText).replyMarkup(markup);
             response = adminBot.execute(editMessage);
         }
 
@@ -793,14 +854,19 @@ public class AdminMenu {
         // Kategorien ermitteln
         List<Category> categories = categoryRepository.findAll();
 
-        // Button mit Text erstellen
-        List<InlineKeyboardButton> inlineKeyboardButtons = new ArrayList<>();
+        // Buttons mit Text erstellen, jeweils neue Zeile + Zurück Button
+        InlineKeyboardButton[][] buttons = new InlineKeyboardButton[categories.size() + 1][];
 
-        categories.forEach(category -> inlineKeyboardButtons.add(new InlineKeyboardButton(category.description).callbackData(category.id.toString())));
+        for (int i = 0; i < categories.size(); i++) {
+            Category category = categories.get(i);
+            buttons[i] = new InlineKeyboardButton[]{new InlineKeyboardButton(category.description).callbackData(category.id.toString())};
+        }
 
-        // Button Liste zu Array konvertieren
-        InlineKeyboardButton[] keyboardButtons = new InlineKeyboardButton[inlineKeyboardButtons.size()];
-        keyboardButtons = inlineKeyboardButtons.toArray(keyboardButtons);
+        // Zurück Button hinzufügen
+        buttons[buttons.length - 1] = new InlineKeyboardButton[]{new InlineKeyboardButton(texts.findById("BACK_ADMINISTRATION_BUTTON").get().text).callbackData("return")};
+
+        // Inline Markup erstellen
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup(buttons);
 
         // Neue Nachricht senden
         // Buttons zurückgeben
@@ -808,7 +874,7 @@ public class AdminMenu {
         SendMessage sendMessage = new SendMessage(chatId, categorySelectionText);
 
         // Button zum Call hinzufügen
-        sendMessage.replyMarkup(new InlineKeyboardMarkup(keyboardButtons));
+        sendMessage.replyMarkup(markup);
 
         // Senden
         BaseResponse messageResponse = adminBot.execute(sendMessage);

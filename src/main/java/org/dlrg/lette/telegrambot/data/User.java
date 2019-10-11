@@ -12,12 +12,19 @@ public class User {
     @Id
     public Integer id;
     public List<Integer> categories;
+    public String name;
 
     public User() {
     }
 
     public User(Integer id) {
         this.id = id;
+        this.categories = new ArrayList<>();
+    }
+
+    public User(Integer id, String name) {
+        this.id = id;
+        this.name = name;
         this.categories = new ArrayList<>();
     }
 }
