@@ -15,5 +15,6 @@ public class Counter {
 
     public Counter(String id) {
         this.id = id;
+        this.sequenceValue = 0;
     }
 }
