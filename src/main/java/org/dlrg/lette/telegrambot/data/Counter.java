@@ -8,8 +8,12 @@ public class Counter {
 
     @Id
     public String id;
-    public int sequenceValue;
+    public Integer sequenceValue;
 
     public Counter() {
+    }
+
+    public Counter(String id) {
+        this.id = id;
     }
 }

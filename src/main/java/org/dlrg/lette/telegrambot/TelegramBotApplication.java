@@ -31,11 +31,11 @@ public class TelegramBotApplication {
         // Admin
         TelegramBot adminBot = new TelegramBot(authConfig.getAdminBotToken());
         String adminUrl = webhookConfig.getExternalAdminUrl() + webhookConfig.getAdminUUID();
+        log.debug("Admin webhook address: " + adminUrl);
         SetWebhook setAdminWebhook = new SetWebhook().url(adminUrl);
         BaseResponse adminResponse = adminBot.execute(setAdminWebhook);
 
         if (adminResponse.isOk()) {
-            log.debug("Admin webhook address: " + adminUrl);
             log.info("Admin Webhook successful registered.");
         } else {
             log.error(adminResponse.description());
@@ -44,11 +44,11 @@ public class TelegramBotApplication {
         // Sender
         TelegramBot senderBot = new TelegramBot(authConfig.getSenderBotToken());
         String senderUrl = webhookConfig.getExternalSenderUrl() + webhookConfig.getSenderUUID();
+        log.debug("Sender webhook address: " + senderUrl);
         SetWebhook setSenderWebhook = new SetWebhook().url(senderUrl);
         BaseResponse senderResponse = senderBot.execute(setSenderWebhook);
 
         if (senderResponse.isOk()) {
-            log.debug("Sender webhook address: " + senderUrl);
             log.info("Sender webhook successful registered.");
         } else {
             log.error(senderResponse.description());
@@ -59,15 +59,15 @@ public class TelegramBotApplication {
     public static void unregisterWebhooks() {
         DeleteWebhook deleteWebhook = new DeleteWebhook();
 
-		// Unregister WebHook for Admin-Bot
-		log.info("Delete webhook for Admin Bot...");
-		TelegramBot adminBot = new TelegramBot(authConfig.getAdminBotToken());
-		BaseResponse response = adminBot.execute(deleteWebhook);
-		log.info("Deletion successful for Admin-Bot: " + response.isOk());
+        // Unregister WebHook for Admin-Bot
+        log.info("Delete webhook for Admin Bot...");
+        TelegramBot adminBot = new TelegramBot(authConfig.getAdminBotToken());
+        BaseResponse response = adminBot.execute(deleteWebhook);
+        log.info("Deletion successful for Admin-Bot: " + response.isOk());
 
-		// Unregister WebHook for Sender-Bot
-		TelegramBot senderBot = new TelegramBot(authConfig.getAdminBotToken());
-		response = senderBot.execute(deleteWebhook);
+        // Unregister WebHook for Sender-Bot
+        TelegramBot senderBot = new TelegramBot(authConfig.getAdminBotToken());
+        response = senderBot.execute(deleteWebhook);
         log.info("Deletion successful for Sender-Bot: " + response.isOk());
 
         log.info("Shutting down...");

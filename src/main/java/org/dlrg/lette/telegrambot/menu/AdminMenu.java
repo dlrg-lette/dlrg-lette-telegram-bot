@@ -94,7 +94,7 @@ public class AdminMenu {
                             case "confirm":
                                 confirmSendMessage(adminBot, chatId, update.message().text());
                                 return;
-                            case "category":
+                            case "categories":
                                 // Eingehende Antwort löschen
                                 deleteMessageFromChat(adminBot, chatId, messageId);
 
@@ -696,8 +696,20 @@ public class AdminMenu {
 
     private Category newAutoincrementedCategory(String categoryDescription) {
         // Da es in MongoDB kein automatisiertes AUTO_INCREMENT gibt hier manuell
-        Counter counter = counterRepository.findById("category").get();
-        counter.sequenceValue += 1;
+        Optional<Counter> optionalCounter = counterRepository.findById("categories");
+        Counter counter;
+
+        if (optionalCounter.isEmpty()) {
+            counter = new Counter("categories");
+        } else {
+            counter = optionalCounter.get();
+            if (counter.sequenceValue == null) {
+                counter.sequenceValue = 0;
+            } else {
+                counter.sequenceValue += 1;
+            }
+        }
+
         counterRepository.save(counter);
 
         return new Category(counter.sequenceValue, categoryDescription);
