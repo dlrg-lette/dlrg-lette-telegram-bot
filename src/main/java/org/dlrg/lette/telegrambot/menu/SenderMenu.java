@@ -13,6 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.dlrg.lette.telegrambot.data.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -37,6 +38,7 @@ public class SenderMenu {
         this.texts = textRepository;
     }
 
+    @Async
     public void processUpdate(Update update, String senderBotToken) {
         try {
             TelegramBot senderBot = new TelegramBot(senderBotToken);

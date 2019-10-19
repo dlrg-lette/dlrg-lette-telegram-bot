@@ -9,6 +9,7 @@ import org.dlrg.lette.telegrambot.menu.SenderMenu;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -39,11 +40,11 @@ public class WebhookController {
         if (uuid.equalsIgnoreCase(webhookConfig.getAdminUUID())) {
             // Admin Bot
             log.debug("Admin Update Received, processing in asynchronous task...");
-            new Thread(() -> adminMenu.processUpdate(update, authConfig.getAdminBotToken(), authConfig.getSenderBotToken())).start();
+            adminMenu.processUpdate(update, authConfig.getAdminBotToken(), authConfig.getSenderBotToken());
         } else if (uuid.equalsIgnoreCase(webhookConfig.getSenderUUID())) {
             // Sender Bot
             log.debug("Sender Update Received, processing in asynchronous task...");
-            new Thread(() -> senderMenu.processUpdate(update, authConfig.getSenderBotToken())).start();
+            senderMenu.processUpdate(update, authConfig.getSenderBotToken());
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }

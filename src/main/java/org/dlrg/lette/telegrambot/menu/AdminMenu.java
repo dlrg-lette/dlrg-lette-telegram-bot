@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.dlrg.lette.telegrambot.data.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -40,6 +41,7 @@ public class AdminMenu {
         this.moderatorRepository = moderatorRepository;
     }
 
+    @Async
     public void processUpdate(Update update, String adminBotToken, String senderBotToken) {
         // Bots erstellen
         TelegramBot adminBot = new TelegramBot(adminBotToken);
@@ -426,8 +428,6 @@ public class AdminMenu {
                     log.error(String.format("Errror while sending exception occured error / SQUIRREL: %d - %s", response.errorCode(), response.description()));
                 }
             }
-
-
         }
     }
 

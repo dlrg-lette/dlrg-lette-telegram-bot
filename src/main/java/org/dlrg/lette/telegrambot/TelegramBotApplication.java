@@ -11,12 +11,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 import javax.annotation.PreDestroy;
 
 @SpringBootApplication
 @Configuration
 @EnableConfigurationProperties({WebhookConfig.class, AuthConfig.class})
+@EnableAsync
 public class TelegramBotApplication {
 
     private static final Logger log = LogManager.getLogger(TelegramBotApplication.class);
