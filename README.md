@@ -1,6 +1,6 @@
 # Telegram Bot - DLRG Lette e. V.
 Es handelt sich hierbei um einen Telegram-Bot der DLRG Lette 
-für den schnellen Informationsaustausch.
+für den schnellen Informationsaustausch. Ein "Newsletter-Bot" wenn man so will.
 
 ## Funktionen Benutzer:
 - Abonnieren von verschiedenen Kategorien.
@@ -9,13 +9,17 @@ für den schnellen Informationsaustausch.
 
 ## Funktionen Administratoren / Moderatoren:
 - Senden einer Nachricht an alle Abonnenten einer bestimmten Kategorie.
+- Hinzufügen von Moderatoren.
+- Ändern von Berechtigungsrollen von Moderatoren (Admin / Moderator)
+- Entfernen von Moderatoren (Nur Admins)
+- Hinzufügen, Ändern und Löschen von Kategorien
 
 
 # Erforderliche Komponenten
-- MonoDB
+- MongoDB
 - 2 Telegram Bots (bzw. Token)
     - AdminBot -> Für Moderatoren und Admins
-    - SenderBot -> Für die Anwender / Mitglieder
+    - SenderBot -> Für die Benutzer / Abonennten
     
 # Einrichtung
 ## SpringBoot Parameter
