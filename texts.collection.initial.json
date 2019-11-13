@@ -1,16 +1,45 @@
-{"_id":"BEAR","text":"Es ist leider ein Fehler aufgetreten. Melden Sie dies bitte dem Webmaster der Ortsgruppe. Fehler: BEAR - Chat: %d - Zeitpunkt: %s"}
+{"_id":"ADD_MODERATOR_BUTTON","text":"Moderator hinzufügen"}
+{"_id":"ADD_MODERATOR_MENU_TEXT","text":"Um einen neuen Moderator hinzuzufügen senden Sie diesen bitte als Kontakt über das Anhänge Menü:"}
+{"_id":"ADMINISTRATION_FINISHED_TEXT","text":"Administration beendet."}
+{"_id":"ADMIN_SUFFIX","text":"%s (Admin)"}
+{"_id":"BACK_ADMINISTRATION_BUTTON","text":"<< Zurück"}
+{"_id":"BEAR","text":"Es ist leider ein Fehler aufgetreten. Melde dies bitte dem Webmaster der Ortsgruppe.\nFehler: BEAR - Chat: %d - Zeitpunkt: %s"}
 {"_id":"CANCEL","text":"Aktuellen Befehl abgebrochen..."}
-{"_id":"END","text":"Schade, dass du uns verlässt %s 😟.Ich habe alle Daten die ich von dir gespeichert habe gelöscht 🤖. Auf wiedersehen 👋"}
-{"_id":"SUBSCRIBED","text":"%s ✅"}
-{"_id":"UNSUBSCRIBED","text":"%s ⛔"}
+{"_id":"CATEGORY_ADMINISTRATION","text":"Kategorie Administration. Wählen Sie eine Aktion aus:"}
 {"_id":"CATEGORY_SELECTION","text":"Zu folgenden Kategorien können Informationen bekommen werden, bitte auswählen:"}
-{"_id":"MESSAGE_CATEGORY_SELECTION","text":"An die Empfänger welcher Kategorie soll eine Nachricht gesendet werden? Bitte auswählen:"}
-{"_id":"CONFIRM_MESSAGE_CATEGORY","text":"Kategorie %s ausgewählt, bitte zu sendende Nachricht eingeben:"}
-{"_id":"CONFIRM_SEND_MESSAGE","text":"Wollen Sie diese Nachricht wirklich senden?"}
+{"_id":"CHANGE_CATEGORY_ADMINISTRATION_BUTTON","text":"Kategorie Ändern"}
+{"_id":"CHANGE_CATEGORY_ADMINISTRATION_TEXT","text":"Folgende Kategorien stehen zur Verfügung. Bitte auswählen welche geändert werden soll:"}
+{"_id":"CHANGE_CATEGORY_NEW_DESCRIPTION_TEXT","text":"Bitte geben Sie die neue Beschreibung für die Kategorie '%s' ein:"}
+{"_id":"CHANGE_MODERATOR_ADMINISTRATION_TEXT","text":"Wählen Sie den Moderator aus, dessen Berechtigung geändert werden soll."}
+{"_id":"CHANGE_MODERATOR_BUTTON","text":"Berechtigung eines Moderatoren anpassen"}
+{"_id":"CLOSE_ADMINISTRATION_BUTTON","text":"<< Administration beenden"}
 {"_id":"CONFIRM_BUTTON","text":"✅ Nachricht senden"}
-{"_id":"DECLINE_BUTTON","text":"⛔ ABBRECHEN!"}
 {"_id":"CONFIRM_CANCEL","text":"ABGEBROCHEN, die Nachricht wurde nicht gesendet!"}
-{"_id":"WELCOME_SENDER","text":"Willkommen %s, beim Informations-Bot der DLRG OG Lette e. V. Über /kategorien kannst du auswählen zu welchen Themengebieten du Informationen erhalten möchtest. Über /ende vergesse ich dich umgehend und alle deine Daten."}
-{"_id":"WELCOME_ADMIN","text":"Willkommen Moderator %s. Über /nachricht kannst du an alle Benutzer, die diese Kategorie abonniert haben, eine Nachricht senden."}
+{"_id":"CONFIRM_CATEGORY_REMOVED","text":"Die Kategorie '%s' wurde entfernt und %d Abonennten wurden benachrichtigt."}
+{"_id":"CONFIRM_MESSAGE_CATEGORY","text":"Kategorie %s ausgewählt, bitte zu sendende Nachricht eingeben:"}
+{"_id":"CONFIRM_NEW_MODERATOR","text":"%s ist nun als Moderator hinterlegt."}
+{"_id":"CONFIRM_SEND_MESSAGE","text":"Wollen Sie diese Nachricht wirklich senden?"}
 {"_id":"CONFIRM_SEND_TO_MODERATOR","text":"Nachricht an %d Abonnenten zugestellt. ✅"}
+{"_id":"CREATE_CATEGORY_ADMINISTRATION_BUTTON","text":"Kategorie(n) anlegen"}
+{"_id":"CURRENT_CATEGORIES","text":"Folgende Kategorien sind aktuell verfügbar. Neue Kategorien in Zeilen getrennt eingeben.\nEine Zeile = Eine Kategorie."}
+{"_id":"DECLINE_BUTTON","text":"⛔ ABBRECHEN!"}
+{"_id":"DELETE_CATEGORY_ADMINISTRATION_BUTTON","text":"Kategorie Entfernen"}
+{"_id":"DELETE_CATEGORY_ADMINISTRATION_TEXT","text":"Bitte wählen Sie die Kategorie aus, die gelöscht werden soll:"}
+{"_id":"DELETE_MODERATOR_ADMINISTRATION_TEXT","text":"Wählen Sie den Moderator aus, dem alle Berechtigungen entzogen werden sollen:"}
+{"_id":"DELETE_MODERATOR_BUTTON","text":"Moderator entfernen"}
+{"_id":"DUCK_ERROR","text":"Irgendetwas ist schief gelaufen. Bitte informiere den Webmaster der Ortsgruppe über diesen Fehler. Fehler-ID: DUCK.\nDetails: data: %s status: %s"}
+{"_id":"END","text":"Schade, dass du uns verlässt %s 😟.\nIch habe alle Daten die ich von dir gespeichert habe gelöscht 🤖.\nAuf wiedersehen 👋"}
+{"_id":"FINISHED_ABOS","text":"Abo Verwaltung beendet ✅"}
+{"_id":"FINISHED_MODERATOR_ADMINISTRATION","text":"Administration beendet"}
+{"_id":"MESSAGE_CATEGORY_SELECTION","text":"An die Empfänger welcher Kategorie soll eine Nachricht gesendet werden? Bitte auswählen:"}
+{"_id":"MODERATOR_ADMINISTRATION","text":"Über dieses Menü können Sie die Moderatoren verwalten. Wählen Sie eine der folgenden Aktionen aus:"}
+{"_id":"MODERATOR_DELETED","text":"Moderator %s erfolgreich entfernt."}
+{"_id":"SQUIRREL_ERROR","text":"Ein interner Fehler ist aufgetreten. Bitte informieren Sie den Webmaster dieses Bots. Fehlercode SQUIRREL."}
+{"_id":"SUBSCRIBED","text":"%s ✅"}
+{"_id":"SUBSCRIBER_CATEGORY_REMOVED","text":"Hallo %s, leider gibt es zu deiner abonnierten Kategorie %s keine weiteren Informationen, da sie von den Administratoren entfernt worden ist. Prüfe doch bei der Gelegenheit ob es nicht neue Kategorien gibt. Du kannst deine Abos zu den Kategorien über /abos verwalten. Einen schönen Tag noch."}
+{"_id":"UNAUTHORIZED_MESSAGE","text":"⛔️ Sie haben nicht die notwendigen Berechtigungen um diese Aktion durchzuführen. Wenden Sie sich ggf. an den Administrator. ⛔️"}
+{"_id":"UNICORN_ERROR","text":"Leider ist ein Fehler aufgetreten. Wenn du in einer Aktion warst starte diese Bitte neu und versuche es erneut. Fehler-Code: UNICORN"}
 {"_id":"UNKNOWN_COMMAND","text":"Entschuldige, das habe ich nicht verstanden, oder das Kommando kann ich noch nicht 😔."}
+{"_id":"UNSUBSCRIBED","text":"%s ⛔"}
+{"_id":"WELCOME_ADMIN","text":"Willkommen Moderator %s.\nÜber /nachricht kannst du an alle Benutzer, die die gewählte Kategorie abonniert haben, eine Nachricht senden."}
+{"_id":"WELCOME_SENDER","text":"Willkommen %s, beim Informations-Bot der DLRG OG Lette e. V.\nÜber /abos kannst du auswählen zu welchen Themengebieten du Informationen erhalten möchtest.\nÜber /ende vergesse ich dich umgehend und alle deine Daten."}
