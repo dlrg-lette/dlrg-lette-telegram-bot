@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.*;
 public class WebhookController {
     private static final Logger log = LogManager.getLogger(WebhookController.class);
 
-    private WebhookConfig webhookConfig;
-    private AuthConfig authConfig;
-    private SenderMenu senderMenu;
-    private AdminMenu adminMenu;
+    private final WebhookConfig webhookConfig;
+    private final AuthConfig authConfig;
+    private final SenderMenu senderMenu;
+    private final AdminMenu adminMenu;
 
     @Autowired
     public WebhookController(WebhookConfig webhookConfig, AuthConfig authConfig, SenderMenu senderMenu, AdminMenu adminMenu) {
@@ -27,6 +27,12 @@ public class WebhookController {
         this.authConfig = authConfig;
         this.senderMenu = senderMenu;
         this.adminMenu = adminMenu;
+    }
+
+    // Andere Anfragen immer ablehnen
+    @GetMapping()
+    public ResponseEntity denyAllOtherAccess() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     // Update

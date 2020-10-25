@@ -25,10 +25,10 @@ import java.util.Optional;
 public class SenderMenu {
     private static final Logger log = LogManager.getLogger(SenderMenu.class);
 
-    private SenderChatRepository senderChatRepository;
-    private CategoryRepository categoryRepository;
-    private UserRepository userRepository;
-    private TextRepository texts;
+    private final SenderChatRepository senderChatRepository;
+    private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
+    private final TextRepository texts;
 
     @Autowired
     public SenderMenu(SenderChatRepository senderChatRepository, CategoryRepository categoryRepository, UserRepository userRepository, TextRepository textRepository) {
