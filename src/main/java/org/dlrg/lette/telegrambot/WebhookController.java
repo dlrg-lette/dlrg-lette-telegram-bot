@@ -9,7 +9,6 @@ import org.dlrg.lette.telegrambot.menu.SenderMenu;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -29,7 +28,7 @@ public class WebhookController {
         this.adminMenu = adminMenu;
     }
 
-    // Andere Anfragen immer ablehnen
+    // Prevent access to other resources, like MongoDB direct Data access
     @GetMapping()
     public ResponseEntity denyAllOtherAccess() {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

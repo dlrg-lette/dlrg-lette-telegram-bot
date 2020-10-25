@@ -5,6 +5,7 @@ import com.pengrad.telegrambot.model.Contact;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
+import com.pengrad.telegrambot.model.request.ParseMode;
 import com.pengrad.telegrambot.request.DeleteMessage;
 import com.pengrad.telegrambot.request.EditMessageReplyMarkup;
 import com.pengrad.telegrambot.request.EditMessageText;
@@ -13,6 +14,7 @@ import com.pengrad.telegrambot.response.BaseResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.dlrg.lette.telegrambot.data.*;
+import org.dlrg.lette.telegrambot.misc.Helpers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -94,7 +96,7 @@ public class AdminMenu {
 
                         switch (currentChat.status) {
                             case "confirm":
-                                confirmSendMessage(adminBot, chatId, update.message().text());
+                                confirmSendMessage(adminBot, chatId, Helpers.formatMessageText(update.message()));
                                 return;
                             case "categories":
                                 // Eingehende Antwort löschen
@@ -255,7 +257,7 @@ public class AdminMenu {
                             }
 
                             // Senden an alle Abonnenten
-                            sendMessageToCategory(senderBot, currentChat.category, update.callbackQuery().message().text());
+                            sendMessageToCategory(senderBot, currentChat.category, Helpers.formatMessageText(update.callbackQuery().message()));
 
                             // Bestätigung an Moderator senden
                             String confirmMessage = texts.findById("CONFIRM_SEND_TO_MODERATOR").get().text;
@@ -812,6 +814,7 @@ public class AdminMenu {
         // Benutze User-ID als Chat-ID (autom. privater Chat mit dem User)
         subscriber.forEach(user -> {
             SendMessage sendMessage = new SendMessage(user.id, sendingMessageText);
+            sendMessage.parseMode(ParseMode.HTML);
             BaseResponse sendMessageResponse = senderBot.execute(sendMessage);
             if (!sendMessageResponse.isOk()) {
                 log.error(String.format("Error while sending message to user %d: %d - %s", user.id, sendMessageResponse.errorCode(), sendMessageResponse.description()));
@@ -819,7 +822,7 @@ public class AdminMenu {
         });
     }
 
-    private void confirmSendMessage(TelegramBot adminBot, long chatId, String finalMessageText) {
+    private void confirmSendMessage(TelegramBot adminBot, long chatId, String formattedMessageText) {
         // Benutzer um Bestätigung bitten, dass die Nachricht gesendet werden soll
 
         // Bestätigungstext ausgeben
@@ -840,7 +843,10 @@ public class AdminMenu {
         keyboardButtons[1] = new InlineKeyboardButton(declineText).callbackData("false");
 
         // Finale Nachricht ausgeben mit reply_markup
-        SendMessage finalMessage = new SendMessage(chatId, finalMessageText).replyMarkup(new InlineKeyboardMarkup(keyboardButtons));
+
+        SendMessage finalMessage = new SendMessage(chatId, formattedMessageText);
+        finalMessage.replyMarkup(new InlineKeyboardMarkup(keyboardButtons));
+        finalMessage.parseMode(ParseMode.HTML);
         BaseResponse finalMessageResponse = adminBot.execute(finalMessage);
 
         if (!finalMessageResponse.isOk()) {
