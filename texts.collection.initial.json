@@ -30,16 +30,59 @@
 {"_id":"DUCK_ERROR","text":"Irgendetwas ist schief gelaufen. Bitte informiere den Webmaster der Ortsgruppe über diesen Fehler. Fehler-ID: DUCK.\nDetails: data: %s status: %s"}
 {"_id":"END","text":"Schade, dass du uns verlässt %s 😟.\nIch habe alle Daten die ich von dir gespeichert habe gelöscht 🤖.\nAuf wiedersehen 👋"}
 {"_id":"FINISHED_ABOS","text":"Abo Verwaltung beendet ✅"}
-{"_id":"FINISHED_MODERATOR_ADMINISTRATION","text":"Administration beendet"}
-{"_id":"MESSAGE_CATEGORY_SELECTION","text":"An die Empfänger welcher Kategorie soll eine Nachricht gesendet werden? Bitte auswählen:"}
-{"_id":"MODERATOR_ADMINISTRATION","text":"Über dieses Menü können Sie die Moderatoren verwalten. Wählen Sie eine der folgenden Aktionen aus:"}
-{"_id":"MODERATOR_DELETED","text":"Moderator %s erfolgreich entfernt."}
-{"_id":"SQUIRREL_ERROR","text":"Ein interner Fehler ist aufgetreten. Bitte informieren Sie den Webmaster dieses Bots. Fehlercode SQUIRREL."}
-{"_id":"SUBSCRIBED","text":"%s ✅"}
-{"_id":"SUBSCRIBER_CATEGORY_REMOVED","text":"Hallo %s, leider gibt es zu deiner abonnierten Kategorie %s keine weiteren Informationen, da sie von den Administratoren entfernt worden ist. Prüfe doch bei der Gelegenheit ob es nicht neue Kategorien gibt. Du kannst deine Abos zu den Kategorien über /abos verwalten. Einen schönen Tag noch."}
-{"_id":"UNAUTHORIZED_MESSAGE","text":"⛔️ Sie haben nicht die notwendigen Berechtigungen um diese Aktion durchzuführen. Wenden Sie sich ggf. an den Administrator. ⛔️"}
-{"_id":"UNICORN_ERROR","text":"Leider ist ein Fehler aufgetreten. Wenn du in einer Aktion warst starte diese Bitte neu und versuche es erneut. Fehler-Code: UNICORN"}
-{"_id":"UNKNOWN_COMMAND","text":"Entschuldige, das habe ich nicht verstanden, oder das Kommando kann ich noch nicht 😔."}
-{"_id":"UNSUBSCRIBED","text":"%s ⛔"}
-{"_id":"WELCOME_ADMIN","text":"Willkommen Moderator %s.\nÜber /nachricht kannst du an alle Benutzer, die die gewählte Kategorie abonniert haben, eine Nachricht senden."}
-{"_id":"WELCOME_SENDER","text":"Willkommen %s, beim Informations-Bot der DLRG OG Lette e. V.\nÜber /abos kannst du auswählen zu welchen Themengebieten du Informationen erhalten möchtest.\nÜber /ende vergesse ich dich umgehend und alle deine Daten."}
+{
+  "_id": "FINISHED_MODERATOR_ADMINISTRATION",
+  "text": "Administration beendet"
+}
+{
+  "_id": "MESSAGE_CATEGORY_SELECTION",
+  "text": "An die Empfänger welcher Kategorien soll eine Nachricht gesendet werden? Bitte mindestens eine Kategorie auswählen und gewünschte Nachricht eingeben."
+}
+{
+  "_id": "MODERATOR_ADMINISTRATION",
+  "text": "Über dieses Menü können Sie die Moderatoren verwalten. Wählen Sie eine der folgenden Aktionen aus:"
+}
+{
+  "_id": "MODERATOR_DELETED",
+  "text": "Moderator %s erfolgreich entfernt."
+}
+{
+  "_id": "SQUIRREL_ERROR",
+  "text": "Ein interner Fehler ist aufgetreten. Bitte informieren Sie den Webmaster dieses Bots. Fehlercode SQUIRREL."
+}
+{
+  "_id": "SUBSCRIBED",
+  "text": "%s ✅"
+}
+{
+  "_id": "SUBSCRIBER_CATEGORY_REMOVED",
+  "text": "Hallo %s, leider gibt es zu deiner abonnierten Kategorie %s keine weiteren Informationen, da sie von den Administratoren entfernt worden ist. Prüfe doch bei der Gelegenheit ob es nicht neue Kategorien gibt. Du kannst deine Abos zu den Kategorien über /abos verwalten. Einen schönen Tag noch."
+}
+{
+  "_id": "UNAUTHORIZED_MESSAGE",
+  "text": "⛔️ Sie haben nicht die notwendigen Berechtigungen um diese Aktion durchzuführen. Wenden Sie sich ggf. an den Administrator. ⛔️"
+}
+{
+  "_id": "UNICORN_ERROR",
+  "text": "Leider ist ein Fehler aufgetreten. Wenn du in einer Aktion warst starte diese Bitte neu und versuche es erneut. Fehler-Code: UNICORN"
+}
+{
+  "_id": "UNKNOWN_COMMAND",
+  "text": "Entschuldige, das habe ich nicht verstanden, oder das Kommando kann ich noch nicht 😔."
+}
+{
+  "_id": "UNSUBSCRIBED",
+  "text": "%s ⛔"
+}
+{
+  "_id": "WELCOME_ADMIN",
+  "text": "Willkommen Moderator %s.\nÜber /nachricht kannst du an alle Benutzer, die die gewählte Kategorie abonniert haben, eine Nachricht senden."
+}
+{
+  "_id": "WELCOME_SENDER",
+  "text": "Willkommen %s, beim Informations-Bot der %s.\nÜber /abos kannst du auswählen zu welchen Themengebieten du Informationen erhalten möchtest.\nÜber /ende vergesse ich dich umgehend und alle deine Daten."
+}
+{
+  "_id": "BIRD_ERROR",
+  "text": "Es muss mindestens eine Kategorie ausgewählt werden um eine Nachricht versenden zu können!"
+}

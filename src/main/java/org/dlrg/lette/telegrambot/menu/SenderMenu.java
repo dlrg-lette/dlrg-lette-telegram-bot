@@ -11,6 +11,7 @@ import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.BaseResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.dlrg.lette.telegrambot.WebhookConfig;
 import org.dlrg.lette.telegrambot.data.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -29,13 +30,15 @@ public class SenderMenu {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final TextRepository texts;
+    private final WebhookConfig webhookConfig;
 
     @Autowired
-    public SenderMenu(SenderChatRepository senderChatRepository, CategoryRepository categoryRepository, UserRepository userRepository, TextRepository textRepository) {
+    public SenderMenu(SenderChatRepository senderChatRepository, CategoryRepository categoryRepository, UserRepository userRepository, TextRepository textRepository, WebhookConfig webhookConfig) {
         this.senderChatRepository = senderChatRepository;
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
         this.texts = textRepository;
+        this.webhookConfig = webhookConfig;
     }
 
     @Async
@@ -135,7 +138,7 @@ public class SenderMenu {
         }
 
         String welcomeMessageText = texts.findById("WELCOME_SENDER").get().text;
-        SendMessage welcomeMessage = new SendMessage(chatId, String.format(welcomeMessageText, forename));
+        SendMessage welcomeMessage = new SendMessage(chatId, String.format(welcomeMessageText, forename, webhookConfig.getOrganisationName()));
         BaseResponse welcomeResponse = bot.execute(welcomeMessage);
 
         if (!welcomeResponse.isOk()) {

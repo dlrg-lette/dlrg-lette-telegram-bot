@@ -17,6 +17,8 @@ public class WebhookConfig {
     private String externalSenderPort;
     private String externalSenderUrl;
 
+    private String organisationName;
+
     public WebhookConfig() {
         adminUUID = UUID.randomUUID().toString();
         senderUUID = UUID.randomUUID().toString();
@@ -84,5 +86,13 @@ public class WebhookConfig {
 
     public void setExternalSenderUrl(String externalSenderUrl) {
         this.externalSenderUrl = externalSenderUrl;
+    }
+
+    public String getOrganisationName() {
+        return organisationName;
+    }
+
+    public void setOrganisationName(String organisationName) {
+        this.organisationName = organisationName;
     }
 }

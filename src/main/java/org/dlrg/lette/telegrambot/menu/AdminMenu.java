@@ -95,8 +95,22 @@ public class AdminMenu {
                         AdminChat currentChat = optionalCurrentChat.get();
 
                         switch (currentChat.status) {
-                            case "confirm":
-                                confirmSendMessage(adminBot, chatId, Helpers.formatMessageText(update.message()));
+                            case "message":
+                                // Prüfe ob mindestens eine Kategorie vorhanden ist, ansonsten Fehler
+                                if (currentChat.getCategories().isEmpty()) {
+                                    // Fehler ausgeben
+                                    SendMessage birdErrorMessage = new SendMessage(chatId, texts.findById("BIRD_ERROR").get().text);
+                                    adminBot.execute(birdErrorMessage);
+
+                                    // kategorien noch einmal anzeigen
+                                    sendMessageCategories(adminBot, chatId, currentChat);
+                                } else {
+                                    // Setze Status auf confirm
+                                    currentChat.status = "confirm";
+                                    adminChatRepository.save(currentChat);
+
+                                    confirmSendMessage(adminBot, chatId, Helpers.formatMessageText(update.message()));
+                                }
                                 return;
                             case "categories":
                                 // Eingehende Antwort löschen
@@ -108,11 +122,11 @@ public class AdminMenu {
 
                             case "category;change":
                                 // Kategorie zwischenspeichern
-                                int category = currentChat.category;
+                                int category = currentChat.getCategories().get(0);
 
                                 // Status wieder zurücksetzen
                                 currentChat.status = "categories";
-                                currentChat.category = null;
+                                currentChat.getCategories().clear();
                                 adminChatRepository.save(currentChat);
 
                                 // Neue Kategoriebezeichnung übernehmen
@@ -162,7 +176,7 @@ public class AdminMenu {
                                 adminChatRepository.save(currentChat);
 
                                 // Nachricht ausgeben mit Kategorien
-                                sendMessageCategories(adminBot, chatId);
+                                sendMessageCategories(adminBot, chatId, currentChat);
                                 return;
 
                             case "/moderatoren":
@@ -232,13 +246,18 @@ public class AdminMenu {
                             return;
                         }
 
-                        // Kategorie in AdminChat speichern, neuer Status
-                        currentChat.category = Integer.parseInt(data);
-                        currentChat.status = "confirm";
+                        // Kategorie in AdminChat speichern bzw. entfernen, Auswahl bestätigen bzw. markieren
+                        Integer categoryId = Integer.parseInt(data);
+                        if (currentChat.getCategories().contains(categoryId)) {
+                            currentChat.getCategories().remove(categoryId);
+                        } else {
+                            currentChat.getCategories().add(categoryId);
+                        }
+
                         adminChatRepository.save(currentChat);
 
-                        // Kategorie bestätigen, Aufforderung Nachrichteneingabe
-                        confirmMessageCategory(adminBot, chatId, messageId, data);
+                        // Aktualisiere Nachricht für Kategorie-Auswahl
+                        updateSendMessageCategories(adminBot, chatId, messageId, currentChat);
                         return;
 
                     case "confirm":
@@ -257,11 +276,11 @@ public class AdminMenu {
                             }
 
                             // Senden an alle Abonnenten
-                            sendMessageToCategory(senderBot, currentChat.category, Helpers.formatMessageText(update.callbackQuery().message()));
+                            sendMessageToCategory(senderBot, currentChat.getCategories(), Helpers.formatMessageText(update.callbackQuery().message()));
 
                             // Bestätigung an Moderator senden
                             String confirmMessage = texts.findById("CONFIRM_SEND_TO_MODERATOR").get().text;
-                            int receiverAmount = userRepository.findAllByCategory(currentChat.category).size();
+                            int receiverAmount = userRepository.findAllByCategoriesIn(currentChat.getCategories()).size();
                             SendMessage confirmDelivery = new SendMessage(chatId, String.format(confirmMessage, receiverAmount));
                             BaseResponse confirmResponse = adminBot.execute(confirmDelivery);
 
@@ -323,9 +342,11 @@ public class AdminMenu {
 
                                 // Eingabeaufforderung anzeigen
                                 currentChat.status = "category;change";
-                                currentChat.category = Integer.parseInt(action);
+
+                                // Nur an erster Stelle einfügen, dies ist eine Einzel-Operation
+                                currentChat.getCategories().set(0, Integer.parseInt(action));
                                 adminChatRepository.save(currentChat);
-                                showEnterNewCategoryDescriptionText(adminBot, chatId, messageId, currentChat.category);
+                                showEnterNewCategoryDescriptionText(adminBot, chatId, messageId, currentChat.getCategories().get(0));
                                 return;
 
                             // Löschen-Aktion
@@ -807,9 +828,9 @@ public class AdminMenu {
 
     }
 
-    private void sendMessageToCategory(TelegramBot senderBot, int category, String sendingMessageText) {
+    private void sendMessageToCategory(TelegramBot senderBot, List<Integer> categories, String sendingMessageText) {
         // Alle Benutzer mit Kategorie ermitteln
-        List<User> subscriber = userRepository.findAllByCategory(category);
+        List<User> subscriber = userRepository.findAllByCategoriesIn(categories);
 
         // Benutze User-ID als Chat-ID (autom. privater Chat mit dem User)
         subscriber.forEach(user -> {
@@ -868,23 +889,9 @@ public class AdminMenu {
         }
     }
 
-    private void sendMessageCategories(TelegramBot adminBot, long chatId) {
-        // Kategorien ermitteln
-        List<Category> categories = categoryRepository.findAll();
-
-        // Buttons mit Text erstellen, jeweils neue Zeile + Zurück Button
-        InlineKeyboardButton[][] buttons = new InlineKeyboardButton[categories.size() + 1][];
-
-        for (int i = 0; i < categories.size(); i++) {
-            Category category = categories.get(i);
-            buttons[i] = new InlineKeyboardButton[]{new InlineKeyboardButton(category.description).callbackData(category.id.toString())};
-        }
-
-        // Zurück Button hinzufügen
-        buttons[buttons.length - 1] = new InlineKeyboardButton[]{new InlineKeyboardButton(texts.findById("BACK_ADMINISTRATION_BUTTON").get().text).callbackData("return")};
-
-        // Inline Markup erstellen
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup(buttons);
+    private void sendMessageCategories(TelegramBot adminBot, long chatId, AdminChat adminChat) {
+        // Keyboard-Markup erstellen
+        InlineKeyboardMarkup markup = getSendMessageInlineKeyboardMarkup(adminChat);
 
         // Neue Nachricht senden
         // Buttons zurückgeben
@@ -901,5 +908,52 @@ public class AdminMenu {
         if (!messageResponse.isOk()) {
             log.error(messageResponse.errorCode() + " - " + messageResponse.description());
         }
+    }
+
+    private void updateSendMessageCategories(TelegramBot adminBot, long chatId, int messageId, AdminChat adminChat) {
+        // Keyboard-Markup erstellen
+        InlineKeyboardMarkup replyMarkup = getSendMessageInlineKeyboardMarkup(adminChat);
+
+        // Bestehende Nachricht im Chat aktualisieren
+        EditMessageReplyMarkup updateMessageCall = new EditMessageReplyMarkup(chatId, messageId);
+        updateMessageCall.replyMarkup(replyMarkup);
+
+        // Senden
+        BaseResponse messageResponse = adminBot.execute(updateMessageCall);
+
+        // Fehler Logging
+        if (!messageResponse.isOk()) {
+            log.error(messageResponse.errorCode() + " - " + messageResponse.description());
+        }
+    }
+
+    private InlineKeyboardMarkup getSendMessageInlineKeyboardMarkup(AdminChat adminChat) {
+        // Kategorien ermitteln
+        List<Category> categories = categoryRepository.findAll();
+
+        // Buttons mit Text erstellen, jeweils neue Zeile + Zurück Button
+        InlineKeyboardButton[][] buttons = new InlineKeyboardButton[categories.size() + 1][];
+
+        for (int i = 0; i < categories.size(); i++) {
+            Category category = categories.get(i);
+
+            // Prüfe ob Kategorie bereits ausgewählt ist
+            String description = "";
+            if (adminChat.getCategories().contains(category.id)) {
+                description = "✅ ";
+            } else {
+                description = "⛔ ";
+            }
+
+            // Beschreibung setzen
+            description += category.description;
+            buttons[i] = new InlineKeyboardButton[]{new InlineKeyboardButton(description).callbackData(category.id.toString())};
+        }
+
+        // Zurück Button hinzufügen
+        buttons[buttons.length - 1] = new InlineKeyboardButton[]{new InlineKeyboardButton(texts.findById("BACK_ADMINISTRATION_BUTTON").get().text).callbackData("return")};
+
+        // Inline Markup erstellen
+        return new InlineKeyboardMarkup(buttons);
     }
 }

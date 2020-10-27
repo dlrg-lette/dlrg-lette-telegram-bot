@@ -2,10 +2,13 @@ package org.dlrg.lette.telegrambot.data;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.LinkedList;
+import java.util.List;
+
 @Document(collection = "adminChat")
 public class AdminChat extends Chat {
 
-    public Integer category;
+    private List<Integer> categories;
 
     public AdminChat() {
         super();
@@ -17,5 +20,13 @@ public class AdminChat extends Chat {
 
     public AdminChat(Long id, String status) {
         super(id, status);
+        this.categories = new LinkedList<>();
+    }
+
+    public List<Integer> getCategories() {
+        if (categories == null) {
+            categories = new LinkedList<>();
+        }
+        return categories;
     }
 }
