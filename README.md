@@ -17,7 +17,7 @@ für den schnellen Informationsaustausch. Ein "Newsletter-Bot" wenn man so will.
 
 # Erforderliche Komponenten
 - MongoDB
-- 2 Telegram Bots (bzw. Token)
+- 2 Telegram Bots (bzw. Token, können über [Telegram Botfather](https://telegram.me/botfather) erstellt werden)
     - AdminBot -> Für Moderatoren und Admins
     - SenderBot -> Für die Benutzer / Abonennten
     
