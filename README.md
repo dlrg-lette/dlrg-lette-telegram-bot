@@ -64,5 +64,40 @@ müssen auf `/update` enden.
     - `texts`
 
 Bis auf `texts` sind alle Collections initial leer.
+
 ### Initaldaten `texts` collection
+
 [Initialdaten der `texts` collection im JSON Format](texts.collection.initial.json)
+
+## Docker Konfiguration
+
+Nachfolgend finden sich Informationen zum Betrieb als Docker
+Container [Docker Hub](https://hub.docker.com/r/ayokas/dlrg-lette-telegram-bot).
+
+### Umgebungsvariablen
+
+Im Docker Betrieb können alle wichtigen Einstellungen über Umgebungsvariablen hinterlegt werden. Alternativ können auch
+bereits existierende Konfigurationen nach dem ersten Start übernommen werden, sofern sie im Volume vorhanden sind und
+korrekt benannt sind.
+
+| Variable               | Beschreibung                                                                                       | Standard                    |
+|------------------------|----------------------------------------------------------------------------------------------------|:----------------------------|
+| SPRING_PROFILE_ACTIVE  | Aktives Spring Boot Profil / Name der .properties Datei                                            | `application`               |
+| SPRING_CONFIG_LOCATION | Beschreibt den Ordner in welchem nach der Konfiguration gesucht wird                               | `/telegram-bot-config`      |
+| ADMIN_BOT_TOKEN        | Token des Admin-Bot                                                                                |                             |
+| SENDER_BOT_TOKEN       | Token des Sender-Bot                                                                               |                             |
+| EXTERNAL_ADMIN_ADDRESS | Siehe `webhook.external-admin-address`                                                             |                             |
+| EXTERNAL_SENDER_URL    | Siehe `webhook.external-sender-address`                                                            | `${EXTERNAL_ADMIN_ADDRESS}` | 
+| EXTERNAL_PORT          | Siehe `webhook.external-admin-port`, gilt für Admin- und Sender-Bot                                | `443`                       |
+| CONTAINER_PORT         | Port auf dem die Applikation / der Container hört, automatische Portfreigabe des Docker Containers | `8080`                      |
+| BOT_NAME               | Siehe `app.name`                                                                                   | `mongodb`                   |
+| MONGO_HOST             | MongoDB Host / IP unter dem die MongoDB erreichbar ist                                             | `27017`                     |
+| MONGO_PORT             | MongoDB Port                                                                                       |                             |
+| MONGO_DB               | MongoDB Datenbankname                                                                              |                             |
+| MONGO_USER             | MongoDB Benutzer für Kommunikation                                                                 |                             |
+| MONGO_PW               | MongoDB Kennwort                                                                                   |                             |
+| MONGO_AUTH_DB          | Authentifizierungstabelle (normalerweise immer Stanard)                                            | `admin`                     |
+
+### Volumes
+
+Es wird ein Volume benötigt für die Konfiguration, der Pfad wird aus `SPRING_CONFIG_LOCATION` übernommen.
