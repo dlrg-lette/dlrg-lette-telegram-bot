@@ -46,4 +46,4 @@ ENTRYPOINT [ "sh", "-c" ]
 CMD ["exec java -jar /var/lib/telegramBot/${APP_FILE} --spring.config.location=${SPRING_CONFIG_LOCATION}/${SPRING_PROFILE_ACTIVE}.properties --spring-boot.run.profiles=${SPRING_PROFILE_ACTIVE}"]
 
 # Healthcheck
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD [ "(curl -o /dev/null -s -w '%{http_code}\n' http://localhost:${CONTAINER_PORT})" == "200" ]
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD curl --fail http://localhost:${CONTAINER_PORT} || exit 1 

@@ -6,6 +6,7 @@ import com.pengrad.telegrambot.request.SetWebhook;
 import com.pengrad.telegrambot.response.BaseResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.dlrg.lette.telegrambot.misc.Healtcheck;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -41,8 +42,10 @@ public class TelegramBotApplication {
 
         if (adminResponse.isOk()) {
             log.info("Admin Webhook successful registered.");
+            Healtcheck.setAdminBotOK(true);
         } else {
             log.error(adminResponse.description());
+            Healtcheck.setAdminBotOK(false);
         }
 
         // Sender
@@ -54,8 +57,10 @@ public class TelegramBotApplication {
 
         if (senderResponse.isOk()) {
             log.info("Sender webhook successful registered.");
+            Healtcheck.setSenderBotOK(true);
         } else {
             log.error(senderResponse.description());
+            Healtcheck.setSenderBotOK(false);
         }
     }
 

@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.dlrg.lette.telegrambot.menu.AdminMenu;
 import org.dlrg.lette.telegrambot.menu.SenderMenu;
+import org.dlrg.lette.telegrambot.misc.Healtcheck;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,19 +20,27 @@ public class WebhookController {
     private final AuthConfig authConfig;
     private final SenderMenu senderMenu;
     private final AdminMenu adminMenu;
+    private final Healtcheck healthCheck;
 
     @Autowired
-    public WebhookController(WebhookConfig webhookConfig, AuthConfig authConfig, SenderMenu senderMenu, AdminMenu adminMenu) {
+    public WebhookController(WebhookConfig webhookConfig, AuthConfig authConfig, SenderMenu senderMenu, AdminMenu adminMenu, Healtcheck healthCheck) {
         this.webhookConfig = webhookConfig;
         this.authConfig = authConfig;
         this.senderMenu = senderMenu;
         this.adminMenu = adminMenu;
+        this.healthCheck = healthCheck;
     }
 
     // Prevent access to other resources, like MongoDB direct Data access
     @GetMapping()
     public ResponseEntity denyAllOtherAccess() {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    // Healthcheck
+    @GetMapping(path = "/healthcheck")
+    public ResponseEntity returnHealthcheck() {
+        return healthCheck.getServiceHealth();
     }
 
     // Update
