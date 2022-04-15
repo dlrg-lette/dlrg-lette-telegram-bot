@@ -43,7 +43,7 @@ COPY --from=builder /project/target/*.jar /var/lib/telegramBot/${APP_FILE}
 COPY --from=builder /project/docker-example.properties ${APP_DIR}/${SPRING_PROFILE_ACTIVE}.properties
 
 ENTRYPOINT [ "sh", "-c" ]
-CMD ["exec java -jar /var/lib/telegramBot/${APP_FILE} --spring.config.location=${SPRING_CONFIG_LOCATION}/${SPRING_PROFILE_ACTIVE}.properties --spring-boot.run.profiles=${SPRING_PROFILE_ACTIVE}"]
+CMD ["exec java -jar /var/lib/telegramBot/$APP_FILE --spring.config.location=$SPRING_CONFIG_LOCATION/$SPRING_PROFILE_ACTIVE.properties --spring-boot.run.profiles=$SPRING_PROFILE_ACTIVE"]
 
 # Healthcheck
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD curl --fail http://localhost:${CONTAINER_PORT}/healthcheck || exit 1 
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD curl --fail http://localhost:$CONTAINER_PORT/healthcheck || exit 1 
