@@ -8,7 +8,7 @@ RUN mvn package -DskipTests -B
 FROM eclipse-temurin:11-jre
 
 LABEL author="Simon Ameling / Ayokas"
-LABEL version="1.0.2"
+LABEL version="1.1.0"
 
 # Config via environment variables
 ENV APP_DIR /telegram-bot-config
