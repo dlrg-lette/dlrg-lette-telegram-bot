@@ -5,18 +5,17 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.1.8.RELEASE</version>
+		<version>3.3.3</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>org.dlrg.lette</groupId>
 	<artifactId>telegram-bot</artifactId>
-    <version>1.1.0</version>
+    <version>2.0.0</version>
 	<name>telegram-bot</name>
 	<description>Telegram Bot der DLRG Lette e. V.</description>
 
 	<properties>
-		<java.version>11</java.version>
-		<log4j2.version>2.16.0</log4j2.version>
+		<java.version>17</java.version>
 	</properties>
 
 	<dependencies>

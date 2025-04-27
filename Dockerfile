@@ -1,14 +1,14 @@
 # 1st Docker build stage: build the project with maven
-FROM maven:3.6.3-openjdk-11 as builder
+FROM maven:3-openjdk-17-slim  as builder
 WORKDIR /project
 COPY . /project/
 RUN mvn package -DskipTests -B
 
 # 2nd Docker build stage: copy builder output and configure entry point
-FROM eclipse-temurin:11-jre
+FROM eclipse-temurin:17-jre
 
 LABEL author="Simon Ameling / Ayokas"
-LABEL version="1.1.0"
+LABEL version="2.0.0"
 
 # Config via environment variables
 ENV APP_DIR /telegram-bot-config
@@ -21,10 +21,6 @@ ENV SPRING_CONFIG_LOCATION=${APP_DIR}
 # Application configuration
 ENV ADMIN_BOT_TOKEN ""
 ENV SENDER_BOT_TOKEN ""
-ENV EXTERNAL_ADMIN_ADDRESS ""
-ENV EXTERNAL_SENDER_URL ${EXTERNAL_ADMIN_ADDRESS}
-ENV EXTERNAL_PORT 443
-ENV CONTAINER_PORT 8080
 ENV BOT_NAME ""
 
 # MongoDB Connection Params

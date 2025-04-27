@@ -1,22 +1,18 @@
 package org.dlrg.lette.telegrambot;
 
 import com.pengrad.telegrambot.TelegramBot;
-import com.pengrad.telegrambot.request.DeleteWebhook;
-import com.pengrad.telegrambot.request.SetWebhook;
-import com.pengrad.telegrambot.response.BaseResponse;
+import com.pengrad.telegrambot.UpdatesListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.dlrg.lette.telegrambot.menu.AdminMenu;
+import org.dlrg.lette.telegrambot.menu.SenderMenu;
 import org.dlrg.lette.telegrambot.misc.Healtcheck;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
-import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
-
-import javax.annotation.PreDestroy;
 
 @SpringBootApplication
 @Configuration
@@ -26,8 +22,9 @@ public class TelegramBotApplication {
 
     private static final Logger log = LogManager.getLogger(TelegramBotApplication.class);
 
-    private static WebhookConfig webhookConfig;
     private static AuthConfig authConfig;
+    private static SenderMenu senderMenu;
+    private static AdminMenu adminMenu;
 
     public static void main(String[] args) {
         SpringApplication.run(TelegramBotApplication.class, args);
@@ -35,56 +32,40 @@ public class TelegramBotApplication {
         // Webhooks registrieren
         // Admin
         TelegramBot adminBot = new TelegramBot(authConfig.getAdminBotToken());
-        String adminUrl = webhookConfig.getExternalAdminUrl() + webhookConfig.getAdminUUID();
-        log.debug("Admin webhook address: " + adminUrl);
-        SetWebhook setAdminWebhook = new SetWebhook().url(adminUrl);
-        BaseResponse adminResponse = adminBot.execute(setAdminWebhook);
-
-        if (adminResponse.isOk()) {
-            log.info("Admin Webhook successful registered.");
-            Healtcheck.setAdminBotOK(true);
-        } else {
-            log.error(adminResponse.description());
-            Healtcheck.setAdminBotOK(false);
-        }
+        adminBot.setUpdatesListener(updates -> {
+            updates.parallelStream().forEach(update -> {
+                adminMenu.processUpdate(update, authConfig.getAdminBotToken(), authConfig.getSenderBotToken());
+            });
+            return UpdatesListener.CONFIRMED_UPDATES_ALL;
+        }, e -> {
+            if (e.response() != null) {
+                // got bad response from telegram
+                log.error("{}: {}", e.response().errorCode(), e.response().description());
+            } else {
+                // probably network error
+                log.error(e);
+            }
+        });
+        Healtcheck.setAdminBotOK(true);
 
         // Sender
         TelegramBot senderBot = new TelegramBot(authConfig.getSenderBotToken());
-        String senderUrl = webhookConfig.getExternalSenderUrl() + webhookConfig.getSenderUUID();
-        log.debug("Sender webhook address: " + senderUrl);
-        SetWebhook setSenderWebhook = new SetWebhook().url(senderUrl);
-        BaseResponse senderResponse = senderBot.execute(setSenderWebhook);
+        senderBot.setUpdatesListener(updates -> {
+            updates.parallelStream().forEach(update -> {
+                senderMenu.processUpdate(update, authConfig.getSenderBotToken());
+            });
+            return UpdatesListener.CONFIRMED_UPDATES_ALL;
+        }, e -> {
+            if (e.response() != null) {
+                // got bad response from telegram
+                log.error("{}: {}", e.response().errorCode(), e.response().description());
+            } else {
+                // probably network error
+                log.error(e);
+            }
+        });
 
-        if (senderResponse.isOk()) {
-            log.info("Sender webhook successful registered.");
-            Healtcheck.setSenderBotOK(true);
-        } else {
-            log.error(senderResponse.description());
-            Healtcheck.setSenderBotOK(false);
-        }
-    }
-
-    @PreDestroy
-    public static void unregisterWebhooks() {
-        DeleteWebhook deleteWebhook = new DeleteWebhook();
-
-        // Unregister WebHook for Admin-Bot
-        log.info("Delete webhook for Admin Bot...");
-        TelegramBot adminBot = new TelegramBot(authConfig.getAdminBotToken());
-        BaseResponse response = adminBot.execute(deleteWebhook);
-        log.info("Deletion successful for Admin-Bot: " + response.isOk());
-
-        // Unregister WebHook for Sender-Bot
-        TelegramBot senderBot = new TelegramBot(authConfig.getAdminBotToken());
-        response = senderBot.execute(deleteWebhook);
-        log.info("Deletion successful for Sender-Bot: " + response.isOk());
-
-        log.info("Shutting down...");
-    }
-
-    @Autowired
-    public void setWebhookConfig(WebhookConfig webhookConfig) {
-        TelegramBotApplication.webhookConfig = webhookConfig;
+        Healtcheck.setSenderBotOK(true);
     }
 
     @Autowired
@@ -92,4 +73,13 @@ public class TelegramBotApplication {
         TelegramBotApplication.authConfig = authConfig;
     }
 
+    @Autowired
+    public void setAdminMenu(AdminMenu adminMenu) {
+        TelegramBotApplication.adminMenu = adminMenu;
+    }
+
+    @Autowired
+    public void setSenderMenu(SenderMenu senderMenu) {
+        TelegramBotApplication.senderMenu = senderMenu;
+    }
 }
