@@ -22,10 +22,7 @@ für den schnellen Informationsaustausch. Ein "Newsletter-Bot" wenn man so will.
     - SenderBot -> Für die Benutzer / Abonennten
     
 # Einrichtung
-## SpringBoot Parameter
- Für grundlegende SpringBoot Parameter verweise ich auf die aktuelle
- Dokumentation: [SpringBoot Documentation: Appendix A: Common application
-           properties](https://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html)
+Nachrichten werden durch die API gepollt, es wird also KEIN freigegebener Port o.ä. benötigt. Neu in Version 2.0.0 - [#6](https://github.com/dlrg-lette/dlrg-lette-telegram-bot/issues/6)
 
 ### Erforderlich
 
@@ -35,24 +32,6 @@ das Telegram Erscheinungsbild
 `auth.admin-bot-token=` Token des Admin-Bots
 
 `auth.sender-bot-token=` Token des Sender-Bot
-
-`webhook.external-admin-address=` Die Basisadresse der Webhooks, von
-außen auflösbar
-
-`webhook.external-sender-address=${webhook.external-admin-address}`
-
-`webhook.external-admin-port=443`
-
-`webhook.external-sender-port=443`
-
-### Optional
-Diese URLs werden an Telegram gesendet um Updates als WebHook zu
-erhalten. Sie müssen von außen erreichbar sein (vor Proxies etc.) und
-müssen auf `/update` enden.
-
-`webhook.external-admin-url=https://${webhook.external-admin-address}:${webhook.external-admin-port}/update/`
-
-`webhook.external-sender-url=https://${webhook.external-sender-address}:${webhook.external-sender-port}/update/`
 
 ## MongoDB
 - Konfiguration der MonoDB über `spring.data.mongodb.*` Parameter.
@@ -86,10 +65,6 @@ korrekt benannt sind.
 | SPRING_CONFIG_LOCATION | Beschreibt den Ordner in welchem nach der Konfiguration gesucht wird                               | `/telegram-bot-config`      |
 | ADMIN_BOT_TOKEN        | Token des Admin-Bot                                                                                |                             |
 | SENDER_BOT_TOKEN       | Token des Sender-Bot                                                                               |                             |
-| EXTERNAL_ADMIN_ADDRESS | Siehe `webhook.external-admin-address`                                                             |                             |
-| EXTERNAL_SENDER_URL    | Siehe `webhook.external-sender-address`                                                            | `${EXTERNAL_ADMIN_ADDRESS}` | 
-| EXTERNAL_PORT          | Siehe `webhook.external-admin-port`, gilt für Admin- und Sender-Bot                                | `443`                       |
-| CONTAINER_PORT         | Port auf dem die Applikation / der Container hört, automatische Portfreigabe des Docker Containers | `8080`                      |
 | BOT_NAME               | Siehe `app.name`                                                                                   | `mongodb`                   |
 | MONGO_HOST             | MongoDB Host / IP unter dem die MongoDB erreichbar ist                                             | `27017`                     |
 | MONGO_PORT             | MongoDB Port                                                                                       |                             |
